@@ -1,0 +1,13 @@
+Vehicle*/*/*
+*.pyc
+probability/*
+pytorch_result*/*/*
+attention_result*/*
+UniTS_final_result*/*/*
+results*/*/*
+tokenized*/*/*
+*mosaic*/*
+actual*/*
+retry*/*
+wandb/*
+checkpoints/*

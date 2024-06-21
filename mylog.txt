@@ -1,0 +1,29 @@
+Epoch: 10 cost time: 404.6388373374939
+Epoch: 10, Steps: 15874 | Avg Train Loss: 0.0407934
+wandb: | 0.505 MB of 0.505 MB uploaded
+wandb: Run history:
+wandb:                        loss_avg █▅▄▃▂▃▃▃▇▃▃▃▅▂▃▃▄▂▃▃▁▃▃▃▁▃▃▃▅▃▃▃▄▂▃▂▄▂▃▂
+wandb:                            norm ▅▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:          train_cls_loss_longlat ▂▆▂▂▁▁▂▁▂▂▂▂█▁▂▁▄▃▂▁▂▁▃▂▂▁▂▂▂▅▂▂▃▁▅▂▂▁▁▂
+wandb:  train_cls_loss_speed_direction ▇▁▁▁▄▁▅▁▄▂▁▄█▄▁▁▁▆▃▁▁▁▁▁▇▁▄▃▁▄▁▃▁▄▃▄▁▁▄▁
+wandb:                  train_loss_avg █▃▂▃▅▁▂▁▁▁
+wandb:         train_mask_loss_longlat ▂▆▂▂▁▁▂▂▂▂▂▂█▁▁▁▄▃▂▂▂▁▃▂▂▁▂▂▂▅▂▂▃▁▅▂▂▁▁▂
+wandb: train_mask_loss_speed_direction █▁▁▁▄▁▄▁▄▂▁▄█▄▁▁▁▆▃▁▁▁▁▁▇▁▄▃▁▄▁▃▁▄▃▄▁▁▄▂
+wandb:          train_sum_loss_longlat ▂▆▂▂▁▁▂▁▂▂▂▂█▁▁▁▄▃▂▂▂▁▃▂▂▁▂▂▂▅▂▂▃▁▅▂▂▁▁▂
+wandb:  train_sum_loss_speed_direction █▁▁▁▄▁▅▁▄▂▁▄█▄▁▁▁▆▃▁▁▁▁▁▇▁▄▃▁▄▁▃▁▄▃▄▁▁▄▂
+wandb:
+wandb: Run summary:
+wandb:                        loss_avg 0.04079
+wandb:                            norm 0
+wandb:          train_cls_loss_longlat 0.00409
+wandb:  train_cls_loss_speed_direction 0.04929
+wandb:                  train_loss_avg 0.04079
+wandb:         train_mask_loss_longlat 0.00413
+wandb: train_mask_loss_speed_direction 0.04919
+wandb:          train_sum_loss_longlat 6e-05
+wandb:  train_sum_loss_speed_direction 0.00077
+wandb:
+wandb:  View run ALL_task_UniTS_zeroshot_pretrain_x64_mine_all_array_longlat_speed_direction_2_1_1_train_UniTS_zeroshot_All_ftM_dm64_el3_Exp at: https://wandb.ai/lucija_zuzic/pretrain/runs/dqowoet8
+wandb:  View job at https://wandb.ai/lucija_zuzic/pretrain/jobs/QXJ0aWZhY3RDb2xsZWN0aW9uOjIxMzY3NzE5OQ==/version_details/v0
+wandb: Synced 6 W&B file(s), 0 media file(s), 2 artifact file(s) and 0 other file(s)
+wandb: Find logs at: .\wandb\run-20240620_223303-dqowoet8\logs
