@@ -13,18 +13,20 @@ def find_nearest(array,value):
         return array[idx]
     
 ws_range = [2, 3, 4, 5, 10, 20, 30]
-ws_range = [2, 3, 4]
 setse = {"offsets": ["longitude_no_abs", "latitude_no_abs", "time"], "speed_direction": ["speed", "direction"], "longlat": ["longitude_no_abs", "latitude_no_abs"],
          "xoffsets": ["longitude_no_abs", "time"], "yoffsets": ["latitude_no_abs", "time"]}
 
-sf1, sf2 = 1, 1
-for nf2 in range(sf2):
-    for nf1 in range(sf1):
+sf1, sf2 = 5, 5
+for nf1 in range(sf1):
+    for nf2 in range(sf2):
         for dirname in os.listdir("retry/" + str(nf1 + 1) + "/" + str(nf2 + 1) + "/data_provider/"):
 
             for ws_use in ws_range: 
 
                 if not os.path.isdir("results/all_array_" + dirname + "_" + str(ws_use) + "_" + str(nf1 + 1) + "_" + str(nf2 + 1) + "_test/"):
+                    continue
+
+                if os.path.isdir("UniTS_final_res/" + str(nf1 + 1) + "/" + str(nf2 + 1) + "/" + dirname + "/" + str(ws_use) + "/"):
                     continue
 
                 print("results/all_array_" + dirname + "_" + str(ws_use) + "_" + str(nf1 + 1) + "_" + str(nf2 + 1) + "_test/")
