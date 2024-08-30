@@ -16,8 +16,7 @@ hidden_range = [256]
 model_list = ["LSTM"]
 
 modes = ["Linear", "Reference", "Twice", "Third"]
-modes = ["Reference"]
-
+modes = ["Twice"]
 
 sf1, sf2 = 5, 5
 for nf1 in range(sf1):
@@ -28,6 +27,9 @@ for nf1 in range(sf1):
             for filename in os.listdir("actual_train/" + str(nf1 + 1) + "/" + str(nf2 + 1)):
 
                 varname = filename.replace("actual_train_", "")
+
+                if "time" in varname:
+                    continue
 
                 file_object_train = load_object("actual_train/" + str(nf1 + 1) + "/" + str(nf2 + 1) + "/actual_train_" + varname) 
                 file_object_val = load_object("actual_val/" + str(nf1 + 1) + "/" + str(nf2 + 1) + "/actual_val_" + varname)
@@ -127,7 +129,7 @@ for nf1 in range(sf1):
                             if os.path.isfile("train_pytorch/" + str(nf1 + 1) + "/" + str(nf2 + 1) + "/" + mod_use + "/" + varname + "/predictions/test/" + model_name + "/" + varname + "_" + model_name + "_ws_" + str(ws_use) + "_hidden_" + str(hidden_use) + "_test.csv"):
                                 continue
                                 
-                            print(mod_use, varname, model_name, ws_use, hidden_use)
+                            print(nf1 + 1, nf2 + 1, mod_use, varname, model_name, ws_use, hidden_use)
                                 
                             if mod_use == "Reference":
 

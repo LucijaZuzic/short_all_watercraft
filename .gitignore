@@ -11,3 +11,5 @@ actual*/*
 retry*/*
 wandb/*
 checkpoints/*
+train_pytorch/*
+train_attention*/
