@@ -1,5 +1,7 @@
 from utilities import load_object, save_object
 import numpy as np
+import matplotlib.pyplot as plt
+import os
 
 dicti_all = load_object("dicti_all")
 dicti_all_ws = load_object("dicti_all_ws")
@@ -12,6 +14,9 @@ ord_metric_traj = dicti_all_traj[0][0]["long no abs"].keys()
 ord_metric = dicti_all[0][0]["speed"].keys()
 metric_dicti_traj = {"Euclid": 0, "R2": 2, "MAE": 0, "RMSE": 0, "R2_wt": 2, "MAE_wt": 0, "RMSE_wt": 0}
 metric_dicti = {"NRMSE": 2, "R2": 2, "MAE": 0, "RMSE": 0}
+metric_translate_traj = {"Euclid": "Euclidean distance", "R2": "$R^{2}$ (%)", "MAE": "MAE", "RMSE": "RMSE", "R2_wt": "$R^{2}$ (%) (time)", "MAE_wt": "MAE (time)", "RMSE_wt": "RMSE (time)"}
+metric_translate = {"NRMSE": "NRMSE (%)", "R2": "$R^{2} (%)$", "MAE": "MAE", "RMSE": "RMSE"}
+
 list_ws = [2, 3, 4, 5, 10, 20, 30] 
  
 sf1, sf2 = 5, 5
@@ -60,23 +65,49 @@ dicti_all_traj_latest_avg = dict()
 dicti_all_latest_std = dict()
 dicti_all_traj_latest_std = dict()
 
+dicti_all_latest_by_test_short = dict()
+dicti_all_traj_latest_by_test_short = dict()
+
+dicti_all_latest_by_test_avg = dict()
+dicti_all_traj_latest_by_test_avg = dict()
+
+dicti_all_latest_by_test_std = dict()
+dicti_all_traj_latest_by_test_std = dict()
+
 for varname in dicti_all[0][0]:
     dicti_all_latest_short[varname] = dict()
     dicti_all_latest_avg[varname] = dict()
     dicti_all_latest_std[varname] = dict()
+    dicti_all_latest_by_test_short[varname] = dict()
+    dicti_all_latest_by_test_avg[varname] = dict()
+    dicti_all_latest_by_test_std[varname] = dict()
     for model_name_use in ord_metric:
         dicti_all_latest_short[varname][model_name_use] = dict()
         dicti_all_latest_avg[varname][model_name_use] = dict()
         dicti_all_latest_std[varname][model_name_use] = dict()
+        dicti_all_latest_by_test_short[varname][model_name_use] = dict()
+        dicti_all_latest_by_test_avg[varname][model_name_use] = dict()
+        dicti_all_latest_by_test_std[varname][model_name_use] = dict()
         for val_ws in list_ws:
             dicti_all_latest_short[varname][model_name_use][str(val_ws)] = dict()
             dicti_all_latest_avg[varname][model_name_use][str(val_ws)] = dict()
             dicti_all_latest_std[varname][model_name_use][str(val_ws)] = dict()
+            dicti_all_latest_by_test_short[varname][model_name_use][str(val_ws)] = dict()
+            dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)] = dict()
+            dicti_all_latest_by_test_std[varname][model_name_use][str(val_ws)] = dict()
             for metric_name_use in list(metric_dicti.keys()):
                 arr = []
+                dicti_all_latest_by_test_short[varname][model_name_use][str(val_ws)][metric_name_use] = dict()
+                dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use] = dict()
+                dicti_all_latest_by_test_std[varname][model_name_use][str(val_ws)][metric_name_use] = dict()
                 for nf1 in range(sf1):
+                    arr_test = []
                     for nf2 in range(sf2):
                         arr.append(dicti_all_latest[nf1][nf2][varname][model_name_use][str(val_ws)][metric_name_use])
+                        arr_test.append(dicti_all_latest[nf1][nf2][varname][model_name_use][str(val_ws)][metric_name_use])
+                    dicti_all_latest_by_test_short[varname][model_name_use][str(val_ws)][metric_name_use][nf1] = arr_test
+                    dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][nf1] = np.mean(arr_test)
+                    dicti_all_latest_by_test_std[varname][model_name_use][str(val_ws)][metric_name_use][nf1] = np.std(arr_test)
                 dicti_all_latest_short[varname][model_name_use][str(val_ws)][metric_name_use] = arr
                 dicti_all_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use] = np.mean(arr)
                 dicti_all_latest_std[varname][model_name_use][str(val_ws)][metric_name_use] = np.std(arr)
@@ -84,24 +115,44 @@ for varname in dicti_all[0][0]:
 save_object("dicti_all_latest_short", dicti_all_latest_short)
 save_object("dicti_all_latest_avg", dicti_all_latest_avg)
 save_object("dicti_all_latest_std", dicti_all_latest_std)
+save_object("dicti_all_latest_by_test_short", dicti_all_latest_by_test_short)
+save_object("dicti_all_latest_by_test_avg", dicti_all_latest_by_test_avg)
+save_object("dicti_all_latest_by_test_std", dicti_all_latest_by_test_std)
 
 for varname in dicti_all_traj[0][0]:
     dicti_all_traj_latest_short[varname] = dict()
     dicti_all_traj_latest_avg[varname] = dict()
     dicti_all_traj_latest_std[varname] = dict()
+    dicti_all_traj_latest_by_test_short[varname] = dict()
+    dicti_all_traj_latest_by_test_avg[varname] = dict()
+    dicti_all_traj_latest_by_test_std[varname] = dict()
     for model_name_use in ord_metric_traj:
         dicti_all_traj_latest_short[varname][model_name_use] = dict()
         dicti_all_traj_latest_avg[varname][model_name_use] = dict()
         dicti_all_traj_latest_std[varname][model_name_use] = dict()
+        dicti_all_traj_latest_by_test_short[varname][model_name_use] = dict()
+        dicti_all_traj_latest_by_test_avg[varname][model_name_use] = dict()
+        dicti_all_traj_latest_by_test_std[varname][model_name_use] = dict()
         for val_ws in list_ws:
             dicti_all_traj_latest_short[varname][model_name_use][str(val_ws)] = dict()
             dicti_all_traj_latest_avg[varname][model_name_use][str(val_ws)] = dict()
             dicti_all_traj_latest_std[varname][model_name_use][str(val_ws)] = dict()
+            dicti_all_traj_latest_by_test_short[varname][model_name_use][str(val_ws)] = dict()
+            dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)] = dict()
+            dicti_all_traj_latest_by_test_std[varname][model_name_use][str(val_ws)] = dict()
             for metric_name_use in list(metric_dicti_traj.keys()):
                 arr = []
+                dicti_all_traj_latest_by_test_short[varname][model_name_use][str(val_ws)][metric_name_use] = dict()
+                dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use] = dict()
+                dicti_all_traj_latest_by_test_std[varname][model_name_use][str(val_ws)][metric_name_use] = dict()
                 for nf1 in range(sf1):
+                    arr_test = []
                     for nf2 in range(sf2):
                         arr.append(dicti_all_traj_latest[nf1][nf2][varname][model_name_use][str(val_ws)][metric_name_use])
+                        arr_test.append(dicti_all_traj_latest[nf1][nf2][varname][model_name_use][str(val_ws)][metric_name_use])
+                    dicti_all_traj_latest_by_test_short[varname][model_name_use][str(val_ws)][metric_name_use][nf1] = arr_test
+                    dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][nf1] = np.mean(arr_test)
+                    dicti_all_traj_latest_by_test_std[varname][model_name_use][str(val_ws)][metric_name_use][nf1] = np.std(arr_test)
                 dicti_all_traj_latest_short[varname][model_name_use][str(val_ws)][metric_name_use] = arr
                 dicti_all_traj_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use] = np.mean(arr)
                 dicti_all_traj_latest_std[varname][model_name_use][str(val_ws)][metric_name_use] = np.std(arr)
@@ -109,293 +160,752 @@ for varname in dicti_all_traj[0][0]:
 save_object("dicti_all_traj_latest_short", dicti_all_traj_latest_short)
 save_object("dicti_all_traj_latest_avg", dicti_all_traj_latest_avg)
 save_object("dicti_all_traj_latest_std", dicti_all_traj_latest_std)
+save_object("dicti_all_traj_latest_by_test_short", dicti_all_traj_latest_by_test_short)
+save_object("dicti_all_traj_latest_by_test_avg", dicti_all_traj_latest_by_test_avg)
+save_object("dicti_all_traj_latest_by_test_std", dicti_all_traj_latest_by_test_std)
 
-total_errs = set()
-total_errs2 = dict()
-supposed_val = dict()
+dicti_my_title = {0: "",
+                  1: "$1^{st}$",
+                  2: "$2^{nd}$",
+                  3: "$3^{rd}$",
+                  4: "$4^{th}$",
+                  5: "$5^{th}$"}
 
-metrictouse = ["MAE", "R2"]
-vartouse = ["direction", "speed", "longitude_no_abs", "latitude_no_abs"]
-translate_varname = {"direction": "heading", "speed": "speed", "longitude_no_abs": "$x$ offset", "latitude_no_abs": "$y$ offset", "time": "time intervals"}
-start_of_table = "\\begin{table*}[!t]\n\t\\begin{center}\n\t\t\\caption{The average METRICNAME across k-fold validation datasets, with standard deviation in brackets, for the VARNAME estimated on the k-fold testing datasets by different RNN models using different forecasting times.}\n\t\t\\label{tab:val_VARNAME_METRICNAME}\n\t\t\\resizebox{\linewidth}{!}{"
-end_of_table = "\t\t\\end{tabular}}\n\t\\end{center}\n\\end{table*}\n"
-for metric_name_use in metrictouse:
-    for varname in vartouse:
-        duplicate_val_all = True
-        duplicate_val = True
-        too_small = True
-        mul_metric = 0
-        rv_metric = 2
-        while too_small or duplicate_val_all:
-            errs = set()
-            set_values_all = set()
-            set_values = dict()
-            for val_ws in list_ws:
-                set_values[val_ws] = set()
-            max_col = dict()
-            for val_ws in list_ws:
-                max_col[val_ws] = (-1000000, 0)
-            min_col = dict()
-            for val_ws in list_ws:
-                min_col[val_ws] = (1000000, 0)
-            duplicate_val_all = False
-            duplicate_val = False
-            too_small = False
-            str_pr = ""
-            first_line = metric_name_use + " " + varname + " 10^{" + str(mul_metric) + "} " + str(rv_metric)
-            first_line = "\t\t\\begin{tabular}{|c|} \\hline\n\t\t\tModel"
-            longc = "c"
-            for model_name_use in ord_metric:
-                for val_ws in list_ws:
-                    first_line += " & $" + str(val_ws) + "$s"
-                    longc += "|c"
-                break
-            first_line = first_line.replace("{|c|}", "{|"+ longc + "|}")
-            for model_name_use in ord_metric:
-                if "offsets" in model_name_use:
-                    continue
-                str_pr += "\t\t\t\multirow{2}{*}{" + model_name_use.replace("_", " ").replace(" 256", "").replace(" longlat speed direction", "") + "}"
-                for val_ws in list_ws: 
-                    vv = dicti_all_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use]  
-                    vv = np.round(vv * (10 ** metric_dicti[metric_name_use]) * (10 ** mul_metric), rv_metric)
-                    vv2 = dicti_all_latest_std[varname][model_name_use][str(val_ws)][metric_name_use]  
-                    vv2 = np.round(vv2 * (10 ** metric_dicti[metric_name_use]) * (10 ** mul_metric), rv_metric)
-                    old_str = vv
-                    if "e+" in str(vv):
-                        parts_12 = str(vv).split("e+")
-                        main_part = float(parts_12[0])
-                        exp_part = int(parts_12[1])
-                        vv = str(np.round(main_part, rv_metric)) + " \\times 10^{" + str(exp_part) + "}"
-                        errs.add((varname, model_name_use, str(val_ws), metric_name_use, old_str, vv))
-                    if "e+" in str(vv2):
-                        old_str2 = vv2
-                        parts_12 = str(vv2).split("e+")
-                        main_part = float(parts_12[0])
-                        exp_part = int(parts_12[1])
-                        vv2 = str(np.round(main_part, rv_metric)) + " \\times 10^{" + str(exp_part) + "}"
-                        errs.add((varname, model_name_use, str(val_ws), metric_name_use, old_str2, vv2))
-                    str_pr += " & $" + str(vv) + "$"
-                    vv = old_str
-                    if vv in set_values[val_ws]:
-                        duplicate_val = True
-                    if vv in set_values_all:
-                        duplicate_val_all = True
-                    if "$0." in str_pr:
-                        too_small = True
-                    set_values[val_ws].add(vv)
-                    set_values_all.add(vv)
-                    if vv > max_col[val_ws][0]:
-                        max_col[val_ws] = (vv, vv2)
-                    if vv < min_col[val_ws][0]:
-                        min_col[val_ws] = (vv, vv2)
-                str_pr += " \\\\\n"
-                str_pr += "\t\t\t"
-                for val_ws in list_ws: 
-                    vv = dicti_all_latest_std[varname][model_name_use][str(val_ws)][metric_name_use]  
-                    vv = np.round(vv * (10 ** metric_dicti[metric_name_use]) * (10 ** mul_metric), rv_metric)
-                    if "e+" in str(vv):
-                        old_str = vv
-                        parts_12 = str(vv).split("e+")
-                        main_part = float(parts_12[0])
-                        exp_part = int(parts_12[1])
-                        vv = str(np.round(main_part, rv_metric)) + " \\times 10^{" + str(exp_part) + "}"
-                        errs.add((varname, model_name_use, str(val_ws), metric_name_use, old_str, vv))
-                    str_pr += " & ($" + str(vv) + "$)"
-                str_pr += " \\\\ \\hline\n"
-            if "R2" not in metric_name_use and "NRMSE" not in metric_name_use:
-                if too_small:
-                    mul_metric += 1
-                    rv_metric = 2
-                elif duplicate_val_all:
-                    rv_metric += 1
-            else: 
-                rv_metric += 1
-            if ("R2" in metric_name_use or "NRMSE" in metric_name_use) and (rv_metric > 3 or mul_metric > 3):
-                break
-            if rv_metric > 3 or mul_metric > 6:
-                break
-        supposed_val[metric_name_use + "_" + varname] = 0
-        if "R2" in metric_name_use:
-            for val_ws in list_ws:
-                supposed_val[metric_name_use + "_" + varname] += 2
-                str_pr = str_pr.replace("$" + str(max_col[val_ws][0]) + "$", "$\\mathbf{" + str(max_col[val_ws][0]) + "}$") 
-                str_pr = str_pr.replace("($" + str(max_col[val_ws][1]) + "$)", "\\textbf{(}$\\mathbf{" + str(max_col[val_ws][1]) + "}$\\textbf{)}") 
+def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_test = 0, use_val = 0, use_std = True, use_var = True, use_traj = True):
+
+    metrictouse_traj = ["Euclid", "MAE", "R2"]
+    vartouse_traj = ["long speed actual dir", "long no abs"]
+    translate_varname_traj = {"long speed ones dir": "speed, heading, a fixed one-second time interval",
+                        "long speed dir": "speed, heading, time intervals",
+                        "long speed actual dir": "speed, heading, the actual time interval",
+                        "long no abs": "$x$ and $y$ offset"}
+    
+    metrictouse_var = ["MAE", "R2"]
+    vartouse_var = ["direction", "speed", "longitude_no_abs", "latitude_no_abs"]
+    translate_varname_var = {"direction": "heading", "speed": "speed", "longitude_no_abs": "$x$ offset", "latitude_no_abs": "$y$ offset", "time": "time intervals"}
+        
+    if use_table:
+        total_errs = set()
+        total_errs2 = dict()
+        supposed_val = dict()
+
+        my_title_replace = "k-fold testing datasets"
+        if use_val == 0:
+            if use_test > 0:
+                my_title_replace = dicti_my_title[use_test] + " k-fold testing dataset"
         else:
-            for val_ws in list_ws:
-                supposed_val[metric_name_use + "_" + varname] += 2
-                str_pr = str_pr.replace("$" + str(min_col[val_ws][0]) + "$", "$\\mathbf{" + str(min_col[val_ws][0]) + "}$") 
-                str_pr = str_pr.replace("($" + str(min_col[val_ws][1]) + "$)", "\\textbf{(}$\\mathbf{" + str(min_col[val_ws][1]) + "}$\\textbf{)}") 
-        newstart = start_of_table.replace("METRICNAME", metric_name_use).replace("VARNAME_", varname + "_").replace("NRMSE ", "NRMSE (\%) ").replace("R2 ", "$R^{2}$ (\%) ").replace("VARNAME ", translate_varname[varname] + " ")
-        if "R2" not in metric_name_use and "NRMSE" not in metric_name_use and mul_metric != 0:
-            newstart = newstart.replace(metric_name_use + " ", metric_name_use + " ($\\times 10^{-" + str(mul_metric) + "}$) ")
-        print(newstart)
-        print(first_line + " \\\\ \\hline")
-        print(str_pr + end_of_table)
-        for e in errs:
-            total_errs.add(e)
-        total_errs2[metric_name_use + "_" + varname] = str_pr.count("mathbf")
+            use_std = False
+            my_title_replace = dicti_my_title[use_test] + " testing dataset, using the " + dicti_my_title[use_val] + " validation dataset,"
 
-metrictouse = ["Euclid", "MAE", "R2"]
-vartouse = ["long speed actual dir", "long no abs"]
-translate_varname = {"long speed ones dir": "speed, heading, a fixed one-second time interval",
-                    "long speed dir": "speed, heading, time intervals",
-                    "long speed actual dir": "speed, heading, the actual time interval",
-                    "long no abs": "$x$ and $y$ offset"}
-start_of_table = "\\begin{table*}[!t]\n\t\\begin{center}\n\t\t\\caption{The average METRICNAME across k-fold validation datasets, with standard deviation in brackets, for the trajectories in the k-fold testing datasets estimated using VARNAME, different RNN models, and different forecasting times.}\n\t\t\\label{tab:val_VARNAME_METRICNAME}\n\t\t\\resizebox{\linewidth}{!}{"
-end_of_table = "\t\t\\end{tabular}}\n\t\\end{center}\n\\end{table*}\n"
-for metric_name_use in metrictouse:
-    for varname in vartouse:
-        duplicate_val_all = True
-        duplicate_val = True
-        too_small = True
-        mul_metric = 0
-        rv_metric = 2
-        while too_small or duplicate_val_all:
-            errs = set()
-            set_values_all = set()
-            set_values = dict()
-            for val_ws in list_ws:
-                set_values[val_ws] = set()
-            max_col = dict()
-            for val_ws in list_ws:
-                max_col[val_ws] = (-1000000, 0)
-            min_col = dict()
-            for val_ws in list_ws:
-                min_col[val_ws] = (1000000, 0)
-            duplicate_val_all = False
-            duplicate_val = False
-            too_small = False
-            str_pr = ""
-            first_line = metric_name_use + " " + varname + " 10^{" + str(mul_metric) + "} " + str(rv_metric)
-            first_line = "\t\t\\begin{tabular}{|c|} \\hline\n\t\t\tModel"
-            longc = "c"
-            for model_name_use in ord_metric:
-                for val_ws in list_ws:
-                    first_line += " & $" + str(val_ws) + "$s"
-                    longc += "|c"
+        if use_var:
+            start_of_table = "\\begin{table*}[!t]\n\t\\begin{center}\n\t\t\\caption{The average METRICNAME across k-fold validation datasets, with standard deviation in brackets, for the VARNAME estimated on the MYTITLE by different RNN models using different forecasting times.}\n\t\t\\label{tab:val_VARNAME_METRICNAME}\n\t\t\\resizebox{\linewidth}{!}{"
+            start_of_table = start_of_table.replace("MYTITLE", my_title_replace)
+            if not use_std:
+                start_of_table = start_of_table.replace(",with standard deviation in brackets,", "")
+            if use_val > 0 and use_test > 0:
+                start_of_table = start_of_table.replace("The average ", "")
+                start_of_table = start_of_table.replace(" across k-fold validation datasets, with standard deviation in brackets,", "")
+            end_of_table = "\t\t\\end{tabular}}\n\t\\end{center}\n\\end{table*}\n"
+            for metric_name_use in metrictouse_var:
+                for varname in vartouse_var:
+                    duplicate_val_all = True
+                    duplicate_val = True
+                    too_small = True
+                    mul_metric = 0
+                    rv_metric = 2
+                    while too_small or duplicate_val_all:
+                        errs = set()
+                        set_values_all = set()
+                        set_values = dict()
+                        for val_ws in list_ws:
+                            set_values[val_ws] = set()
+                        max_col = dict()
+                        for val_ws in list_ws:
+                            max_col[val_ws] = (-1000000, 0)
+                        min_col = dict()
+                        for val_ws in list_ws:
+                            min_col[val_ws] = (1000000, 0)
+                        duplicate_val_all = False
+                        duplicate_val = False
+                        too_small = False
+                        str_pr = ""
+                        first_line = metric_name_use + " " + varname + " 10^{" + str(mul_metric) + "} " + str(rv_metric)
+                        first_line = "\t\t\\begin{tabular}{|c|} \\hline\n\t\t\tModel"
+                        longc = "c"
+                        for model_name_use in ord_metric:
+                            for val_ws in list_ws:
+                                first_line += " & $" + str(val_ws) + "$s"
+                                longc += "|c"
+                            break
+                        first_line = first_line.replace("{|c|}", "{|"+ longc + "|}")
+                        for model_name_use in ord_metric:
+                            if "offsets" in model_name_use:
+                                continue
+                            if use_std:
+                                str_pr += "\t\t\t\multirow{2}{*}{"
+                            else:
+                                str_pr += "\t\t\t"
+                            str_pr += model_name_use.replace("_", " ").replace(" 256", "").replace(" longlat speed direction", "")
+                            if use_std:
+                                str_pr += "}"
+                            for val_ws in list_ws:
+                                if use_val == 0:
+                                    if use_test == 0:
+                                        vv = dicti_all_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use]  
+                                        vv2 = dicti_all_latest_std[varname][model_name_use][str(val_ws)][metric_name_use]  
+                                    else:
+                                        vv = dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][use_test - 1]
+                                        vv2 = dicti_all_latest_by_test_std[varname][model_name_use][str(val_ws)][metric_name_use][use_test - 1] 
+                                else:
+                                    vv = dicti_all_latest[use_test - 1][use_val - 1][varname][model_name_use][str(val_ws)][metric_name_use]
+                                    vv2 = dicti_all_latest[use_test - 1][use_val - 1][varname][model_name_use][str(val_ws)][metric_name_use]
+                                vv = np.round(vv * (10 ** metric_dicti[metric_name_use]) * (10 ** mul_metric), rv_metric)
+                                vv2 = np.round(vv2 * (10 ** metric_dicti[metric_name_use]) * (10 ** mul_metric), rv_metric)
+                                old_str = vv
+                                if "e+" in str(vv):
+                                    parts_12 = str(vv).split("e+")
+                                    main_part = float(parts_12[0])
+                                    exp_part = int(parts_12[1])
+                                    vv = str(np.round(main_part, rv_metric)) + " \\times 10^{" + str(exp_part) + "}"
+                                    errs.add((varname, model_name_use, str(val_ws), metric_name_use, old_str, vv))
+                                if "e+" in str(vv2):
+                                    old_str2 = vv2
+                                    parts_12 = str(vv2).split("e+")
+                                    main_part = float(parts_12[0])
+                                    exp_part = int(parts_12[1])
+                                    vv2 = str(np.round(main_part, rv_metric)) + " \\times 10^{" + str(exp_part) + "}"
+                                    errs.add((varname, model_name_use, str(val_ws), metric_name_use, old_str2, vv2))
+                                str_pr += " & $" + str(vv) + "$"
+                                vv = old_str
+                                if vv in set_values[val_ws]:
+                                    duplicate_val = True
+                                if vv in set_values_all:
+                                    duplicate_val_all = True
+                                if "$0." in str_pr:
+                                    too_small = True
+                                set_values[val_ws].add(vv)
+                                set_values_all.add(vv)
+                                if vv > max_col[val_ws][0]:
+                                    max_col[val_ws] = (vv, vv2)
+                                if vv < min_col[val_ws][0]:
+                                    min_col[val_ws] = (vv, vv2)
+                            if use_std:
+                                str_pr += " \\\\\n"
+                                str_pr += "\t\t\t"
+                                for val_ws in list_ws: 
+                                    if use_val == 0:
+                                        if use_test == 0:
+                                            vv = dicti_all_latest_std[varname][model_name_use][str(val_ws)][metric_name_use]  
+                                        else:
+                                            vv = dicti_all_latest_by_test_std[varname][model_name_use][str(val_ws)][metric_name_use][use_test - 1]
+                                    else:
+                                        vv = dicti_all_latest[use_test - 1][use_val - 1][varname][model_name_use][str(val_ws)][metric_name_use]                            
+                                    vv = np.round(vv * (10 ** metric_dicti[metric_name_use]) * (10 ** mul_metric), rv_metric)
+                                    if "e+" in str(vv):
+                                        old_str = vv
+                                        parts_12 = str(vv).split("e+")
+                                        main_part = float(parts_12[0])
+                                        exp_part = int(parts_12[1])
+                                        vv = str(np.round(main_part, rv_metric)) + " \\times 10^{" + str(exp_part) + "}"
+                                        errs.add((varname, model_name_use, str(val_ws), metric_name_use, old_str, vv))
+                                    str_pr += " & ($" + str(vv) + "$)"
+                            str_pr += " \\\\ \\hline\n"
+                        if "R2" not in metric_name_use and "NRMSE" not in metric_name_use:
+                            if too_small:
+                                mul_metric += 1
+                                rv_metric = 2
+                            elif duplicate_val_all:
+                                rv_metric += 1
+                        else: 
+                            rv_metric += 1
+                        if ("R2" in metric_name_use or "NRMSE" in metric_name_use) and (rv_metric > 3 or mul_metric > 3):
+                            break
+                        if rv_metric > 3 or mul_metric > 6:
+                            break
+                    supposed_val[metric_name_use + "_" + varname] = 0
+                    if "R2" in metric_name_use:
+                        for val_ws in list_ws:
+                            supposed_val[metric_name_use + "_" + varname] += 1 + use_std * 1
+                            str_pr = str_pr.replace("$" + str(max_col[val_ws][0]) + "$", "$\\mathbf{" + str(max_col[val_ws][0]) + "}$") 
+                            str_pr = str_pr.replace("($" + str(max_col[val_ws][1]) + "$)", "\\textbf{(}$\\mathbf{" + str(max_col[val_ws][1]) + "}$\\textbf{)}") 
+                    else:
+                        for val_ws in list_ws:
+                            supposed_val[metric_name_use + "_" + varname] += 1 + use_std * 1
+                            str_pr = str_pr.replace("$" + str(min_col[val_ws][0]) + "$", "$\\mathbf{" + str(min_col[val_ws][0]) + "}$") 
+                            str_pr = str_pr.replace("($" + str(min_col[val_ws][1]) + "$)", "\\textbf{(}$\\mathbf{" + str(min_col[val_ws][1]) + "}$\\textbf{)}") 
+                    newstart = start_of_table.replace("METRICNAME", metric_name_use).replace("VARNAME_", varname + "_").replace("NRMSE ", "NRMSE (\%) ").replace("R2 ", "$R^{2}$ (\%) ").replace("VARNAME ", translate_varname_var[varname] + " ")
+                    if "R2" not in metric_name_use and "NRMSE" not in metric_name_use and mul_metric != 0:
+                        newstart = newstart.replace(metric_name_use + " ", metric_name_use + " ($\\times 10^{-" + str(mul_metric) + "}$) ")
+                    print(newstart)
+                    print(first_line + " \\\\ \\hline")
+                    print(str_pr + end_of_table)
+                    for e in errs:
+                        total_errs.add(e)
+                    total_errs2[metric_name_use + "_" + varname] = str_pr.count("mathbf")
+
+        if use_traj:
+            start_of_table = "\\begin{table*}[!t]\n\t\\begin{center}\n\t\t\\caption{The average METRICNAME across k-fold validation datasets, with standard deviation in brackets, for the trajectories in the MYTITLE estimated using VARNAME, different RNN models, and different forecasting times.}\n\t\t\\label{tab:val_VARNAME_METRICNAME}\n\t\t\\resizebox{\linewidth}{!}{"
+            start_of_table = start_of_table.replace("MYTITLE", my_title_replace)
+            if not use_std:
+                start_of_table = start_of_table.replace(",with standard deviation in brackets,", "")
+            if use_val > 0 and use_test > 0:
+                start_of_table = start_of_table.replace("The average ", "")
+                start_of_table = start_of_table.replace(" across k-fold validation datasets, with standard deviation in brackets,", "")
+            end_of_table = "\t\t\\end{tabular}}\n\t\\end{center}\n\\end{table*}\n"
+            for metric_name_use in metrictouse_traj:
+                for varname in vartouse_traj:
+                    duplicate_val_all = True
+                    duplicate_val = True
+                    too_small = True
+                    mul_metric = 0
+                    rv_metric = 2
+                    while too_small or duplicate_val_all:
+                        errs = set()
+                        set_values_all = set()
+                        set_values = dict()
+                        for val_ws in list_ws:
+                            set_values[val_ws] = set()
+                        max_col = dict()
+                        for val_ws in list_ws:
+                            max_col[val_ws] = (-1000000, 0)
+                        min_col = dict()
+                        for val_ws in list_ws:
+                            min_col[val_ws] = (1000000, 0)
+                        duplicate_val_all = False
+                        duplicate_val = False
+                        too_small = False
+                        str_pr = ""
+                        first_line = metric_name_use + " " + varname + " 10^{" + str(mul_metric) + "} " + str(rv_metric)
+                        first_line = "\t\t\\begin{tabular}{|c|} \\hline\n\t\t\tModel"
+                        longc = "c"
+                        for model_name_use in ord_metric:
+                            for val_ws in list_ws:
+                                first_line += " & $" + str(val_ws) + "$s"
+                                longc += "|c"
+                            break
+                        first_line = first_line.replace("{|c|}", "{|"+ longc + "|}")
+                        for model_name_use in ord_metric_traj:
+                            if "offsets" in model_name_use:
+                                continue
+                            if use_std:
+                                str_pr += "\t\t\t\multirow{2}{*}{"
+                            else:
+                                str_pr += "\t\t\t"
+                            str_pr += model_name_use.replace("_", " ").replace(" 256", "").replace(" longlat speed direction", "")
+                            if use_std:
+                                str_pr += "}"
+                            for val_ws in list_ws: 
+                                if use_val == 0:
+                                    if use_test == 0:
+                                        vv = dicti_all_traj_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use]  
+                                        vv2 = dicti_all_traj_latest_std[varname][model_name_use][str(val_ws)][metric_name_use]  
+                                    else:
+                                        vv = dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][use_test - 1]
+                                        vv2 = dicti_all_traj_latest_by_test_std[varname][model_name_use][str(val_ws)][metric_name_use][use_test - 1] 
+                                else:
+                                    vv = dicti_all_traj_latest[use_test - 1][use_val - 1][varname][model_name_use][str(val_ws)][metric_name_use]
+                                    vv2 = dicti_all_traj_latest[use_test - 1][use_val - 1][varname][model_name_use][str(val_ws)][metric_name_use]
+                                vv = np.round(vv * (10 ** metric_dicti_traj[metric_name_use]) * (10 ** mul_metric), rv_metric)
+                                vv2 = np.round(vv2 * (10 ** metric_dicti_traj[metric_name_use]) * (10 ** mul_metric), rv_metric)
+                                old_str = vv
+                                if "e+" in str(vv):
+                                    parts_12 = str(vv).split("e+")
+                                    main_part = float(parts_12[0])
+                                    exp_part = int(parts_12[1])
+                                    vv = str(np.round(main_part, rv_metric)) + " \\times 10^{" + str(exp_part) + "}"
+                                    errs.add((varname, model_name_use, str(val_ws), metric_name_use, old_str, vv))
+                                if "e+" in str(vv2):
+                                    old_str2 = vv2
+                                    parts_12 = str(vv2).split("e+")
+                                    main_part = float(parts_12[0])
+                                    exp_part = int(parts_12[1])
+                                    vv2 = str(np.round(main_part, rv_metric)) + " \\times 10^{" + str(exp_part) + "}"
+                                    errs.add((varname, model_name_use, str(val_ws), metric_name_use, old_str2, vv2))
+                                str_pr += " & $" + str(vv) + "$"
+                                vv = old_str
+                                if vv in set_values[val_ws]:
+                                    duplicate_val = True
+                                if vv in set_values_all:
+                                    duplicate_val_all = True
+                                if "$0." in str_pr:
+                                    too_small = True
+                                set_values[val_ws].add(vv)
+                                set_values_all.add(vv)
+                                if vv > max_col[val_ws][0]:
+                                    max_col[val_ws] = (vv, vv2)
+                                if vv < min_col[val_ws][0]:
+                                    min_col[val_ws] = (vv, vv2)
+                            if use_std:
+                                str_pr += " \\\\\n"
+                                str_pr += "\t\t\t"
+                                for val_ws in list_ws: 
+                                    if use_val == 0:
+                                        if use_test == 0:
+                                            vv = dicti_all_traj_latest_std[varname][model_name_use][str(val_ws)][metric_name_use]  
+                                        else:
+                                            vv = dicti_all_traj_latest_by_test_std[varname][model_name_use][str(val_ws)][metric_name_use][use_test - 1]
+                                    else:
+                                        vv = dicti_all_traj_latest[use_test - 1][use_val - 1][varname][model_name_use][str(val_ws)][metric_name_use]                            
+                                    vv = np.round(vv * (10 ** metric_dicti_traj[metric_name_use]) * (10 ** mul_metric), rv_metric)
+                                    if "e+" in str(vv):
+                                        old_str = vv
+                                        parts_12 = str(vv).split("e+")
+                                        main_part = float(parts_12[0])
+                                        exp_part = int(parts_12[1])
+                                        vv = str(np.round(main_part, rv_metric)) + " \\times 10^{" + str(exp_part) + "}"
+                                        errs.add((varname, model_name_use, str(val_ws), metric_name_use, old_str, vv))
+                                    str_pr += " & ($" + str(vv) + "$)"
+                            str_pr += " \\\\ \\hline\n"
+                        if "R2" not in metric_name_use and "NRMSE" not in metric_name_use:
+                            if too_small:
+                                mul_metric += 1
+                                rv_metric = 2
+                            elif duplicate_val_all:
+                                rv_metric += 1
+                        else: 
+                            rv_metric += 1
+                        if ("R2" in metric_name_use or "NRMSE" in metric_name_use) and (rv_metric > 3 or mul_metric > 3):
+                            break
+                        if rv_metric > 3 or mul_metric > 6:
+                            break
+                    supposed_val[metric_name_use + "_" + varname] = 0
+                    if "R2" in metric_name_use:
+                        for val_ws in list_ws:
+                            supposed_val[metric_name_use + "_" + varname] += 1 + use_std * 1
+                            str_pr = str_pr.replace("$" + str(max_col[val_ws][0]) + "$", "$\\mathbf{" + str(max_col[val_ws][0]) + "}$") 
+                            str_pr = str_pr.replace("($" + str(max_col[val_ws][1]) + "$)", "\\textbf{(}$\\mathbf{" + str(max_col[val_ws][1]) + "}$\\textbf{)}") 
+                    else:
+                        for val_ws in list_ws:
+                            supposed_val[metric_name_use + "_" + varname] += 1 + use_std * 1
+                            str_pr = str_pr.replace("$" + str(min_col[val_ws][0]) + "$", "$\\mathbf{" + str(min_col[val_ws][0]) + "}$")
+                            str_pr = str_pr.replace("($" + str(min_col[val_ws][1]) + "$)", "\\textbf{(}$\\mathbf{" + str(min_col[val_ws][1]) + "}$\\textbf{)}") 
+                    newstart = start_of_table.replace("METRICNAME", metric_name_use).replace("VARNAME_", varname.replace(" ", "_") + "_").replace("NRMSE ", "NRMSE (\%) ").replace("R2 ", "$R^{2}$ (\%) ").replace("VARNAME", translate_varname_traj[varname])
+                    if "R2" not in metric_name_use and "NRMSE" not in metric_name_use and mul_metric != 0:
+                        newstart = newstart.replace(metric_name_use + " ", metric_name_use + " ($\\times 10^{-" + str(mul_metric) + "}$) ")
+                    if "wt" in metric_name_use:
+                        newstart = newstart.replace("_wt", "").replace("trajectories", "trajectories and time stamps")
+                    print(newstart.replace("Euclid ", "The Euclidean distance "))
+                    print(first_line + " \\\\ \\hline")
+                    print(str_pr + end_of_table)
+                    for e in errs:
+                        total_errs.add(e)
+                    total_errs2[metric_name_use + "_" + varname] = str_pr.count("mathbf")
+
+        errs2 = set()
+        errs3 = set()
+        errs4 = dict()
+        for e in total_errs:
+            errs2.add((e[1], e[2]))
+            errs3.add((e[0], e[1], e[2]))
+            if (e[0], e[1], e[2], e[3]) not in errs4:
+                errs4[(e[0], e[1], e[2], e[3])] = set()
+            errs4[(e[0], e[1], e[2], e[3])].add((e[4], e[5]))
+        #print(errs4)
+
+        for model_name_use_val_ws in errs2:
+            model_name_use, val_ws = model_name_use_val_ws
+            print(model_name_use, val_ws)
+            for varname in dicti_all_traj_latest_avg:
+                #if (varname, model_name_use, val_ws) not in errs3:
+                    #continue
+                for metric_name_use in dicti_all_traj_latest_avg[varname][model_name_use][val_ws]:
+                    if (varname, model_name_use, val_ws, metric_name_use) not in errs4:
+                        continue
+                    print(varname, metric_name_use, dicti_all_traj_latest_avg[varname][model_name_use][val_ws][metric_name_use], dicti_all_traj_latest_std[varname][model_name_use][val_ws][metric_name_use])
+                    for v in errs4[(varname, model_name_use, val_ws, metric_name_use)]:
+                        print(v)
+                    #print(dicti_all_traj_latest_short[varname][model_name_use][val_ws][metric_name_use])
+            for varname in dicti_all_latest_avg:
+                #if (varname, model_name_use, val_ws) not in errs3:
+                    #continue
+                for metric_name_use in dicti_all_latest_avg[varname][model_name_use][val_ws]:
+                    if (varname, model_name_use, val_ws, metric_name_use) not in errs4:
+                        continue
+                    print(varname, metric_name_use, dicti_all_latest_avg[varname][model_name_use][val_ws][metric_name_use], dicti_all_latest_std[varname][model_name_use][val_ws][metric_name_use])
+                    for v in errs4[(varname, model_name_use, val_ws, metric_name_use)]:
+                        print(v)
+                    #print(dicti_all_latest_short[varname][model_name_use][val_ws][metric_name_use])
+
+        for v in total_errs2:
+            if total_errs2[v] != supposed_val[v]:
+                print(v, total_errs2[v], supposed_val[v])
+  
+    lnc = ["#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"]
+    lns = ["solid", "dotted", "dashed", "dashdot"]
+                
+    if use_plot:
+
+        if not os.path.isdir("latest_plot/" + str(use_test) + "/" + str(use_val) + "/"):
+            os.makedirs("latest_plot/" + str(use_test) + "/" + str(use_val) + "/")
+
+        if use_var:
+            for varname in vartouse_var:
+                for metric_name_use in metric_dicti:
+                    plt.figure()
+                    newvar = varname
+                    if varname in translate_varname_var:
+                        newvar = translate_varname_var[varname]
+                    if varname in translate_varname_traj:
+                        newvar = translate_varname_traj[varname]
+                    newmetric = metric_name_use
+                    if metric_name_use in metric_translate:
+                        newmetric = metric_translate[metric_name_use]
+                    if metric_name_use in metric_translate_traj:
+                        newmetric = metric_translate_traj[metric_name_use]
+                    title_use = newvar.capitalize()
+                    if use_val == 0:
+                        if use_test > 0:
+                            title_use += "\n" + dicti_my_title[use_test] + " testing dataset"
+                    else:
+                        title_use += "\n" + dicti_my_title[use_test] + " testing dataset " + dicti_my_title[use_val] + " validation dataset"
+                    plt.title(title_use)
+                    cix = 0
+                    six = 0
+                    for model_name_use in ord_metric:
+                        plt_dict = []
+                        for val_ws in list_ws:
+                            if use_val == 0:
+                                if use_test == 0:
+                                    plt_dict.append(dicti_all_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use])
+                                else:
+                                    plt_dict.append(dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][use_test - 1])
+                            else:
+                                plt_dict.append(dicti_all_latest[use_test - 1][use_val - 1][varname][model_name_use][str(val_ws)][metric_name_use])
+                        plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                        cix += 1
+                        if cix == len(lnc):
+                            cix = 0
+                            six += 1
+                            if six == len(lns):
+                                six = 0
+                    plt.xticks(list_ws)
+                    plt.xlabel("Forecasting time")
+                    plt.ylabel(newmetric)
+                    plt.legend(ncol = 3, loc = "lower left", bbox_to_anchor = (0, -0.5))
+                    plt.savefig("latest_plot/" + str(use_test) + "/" + str(use_val) + "/" + varname + "_" + metric_name_use + "_" + str(use_test) + "_" + str(use_val) + ".png", bbox_inches = "tight")
+                    plt.close()
+
+            if use_test == 0 and use_val == 0:
+                for varname in vartouse_var:
+                    for metric_name_use in metric_dicti:
+                        plt.figure()
+                        newvar = varname
+                        if varname in translate_varname_var:
+                            newvar = translate_varname_var[varname]
+                        if varname in translate_varname_traj:
+                            newvar = translate_varname_traj[varname]
+                        newmetric = metric_name_use
+                        if metric_name_use in metric_translate:
+                            newmetric = metric_translate[metric_name_use]
+                        if metric_name_use in metric_translate_traj:
+                            newmetric = metric_translate_traj[metric_name_use]
+                        for tn in range(5):
+                            cix = 0
+                            six = 0 
+                            plt.subplot(5, 1, tn + 1)
+                            if tn == 0:
+                                plt.title(newvar.capitalize() + " " + newmetric)
+                            for model_name_use in ord_metric:
+                                plt_dict = []
+                                for val_ws in list_ws:
+                                    plt_dict.append(dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn])
+                                if tn == 4:    
+                                    plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                                else:
+                                    plt.plot(list_ws, plt_dict, color = lnc[cix], linestyle = lns[six])
+                                cix += 1
+                                if cix == len(lnc):
+                                    cix = 0
+                                    six += 1
+                                    if six == len(lns):
+                                        six = 0
+                            if tn == 4:
+                                plt.xticks(list_ws)
+                                plt.xlabel("Forecasting time")
+                                plt.legend(ncol = 3, loc = "lower left", bbox_to_anchor = (0, -1))
+                            plt.ylabel("Test " + str(tn + 1))
+                        plt.savefig("latest_plot/" + varname + "_" + metric_name_use + "_test.png", bbox_inches = "tight")
+                        plt.close()
+                        
+                for varname in vartouse_var:
+                    for metric_name_use in metric_dicti:
+                        plt.figure()
+                        newvar = varname
+                        if varname in translate_varname_var:
+                            newvar = translate_varname_var[varname]
+                        if varname in translate_varname_traj:
+                            newvar = translate_varname_traj[varname]
+                        newmetric = metric_name_use
+                        if metric_name_use in metric_translate:
+                            newmetric = metric_translate[metric_name_use]
+                        if metric_name_use in metric_translate_traj:
+                            newmetric = metric_translate_traj[metric_name_use]
+                        for tn in range(5):
+                            cix = 0
+                            six = 0 
+                            plt.subplot(1, 5, tn + 1)
+                            if tn == 2:
+                                plt.title(newvar.capitalize() + " " + newmetric)
+                            for model_name_use in ord_metric:
+                                plt_dict = []
+                                for val_ws in list_ws:
+                                    plt_dict.append(dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn])
+                                if tn == 0:    
+                                    plt.plot(plt_dict, list_ws, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                                else:
+                                    plt.plot(plt_dict, list_ws, color = lnc[cix], linestyle = lns[six])
+                                cix += 1
+                                if cix == len(lnc):
+                                    cix = 0
+                                    six += 1
+                                    if six == len(lns):
+                                        six = 0
+                            if tn == 0:
+                                plt.yticks(list_ws)
+                                plt.ylabel("Forecasting time")
+                                plt.legend(ncol = 3, loc = "lower left", bbox_to_anchor = (0, -0.5))
+                            else:
+                                plt.yticks([])
+                            plt.xlabel("Test " + str(tn + 1))
+                        plt.savefig("latest_plot/" + varname + "_" + metric_name_use + "_reverse_test.png", bbox_inches = "tight")
+                        plt.close()
+
+                for varname in vartouse_var:
+                    for metric_name_use in metric_dicti:
+                        plt.figure()
+                        newvar = varname
+                        if varname in translate_varname_var:
+                            newvar = translate_varname_var[varname]
+                        if varname in translate_varname_traj:
+                            newvar = translate_varname_traj[varname]
+                        newmetric = metric_name_use
+                        if metric_name_use in metric_translate:
+                            newmetric = metric_translate[metric_name_use]
+                        if metric_name_use in metric_translate_traj:
+                            newmetric = metric_translate_traj[metric_name_use]
+                        for tn in range(5):
+                            for vn in range(5):
+                                cix = 0
+                                six = 0 
+                                plt.subplot(5, 5, tn * 5 + vn + 1)
+                                if tn == 0 and vn == 2:
+                                    plt.title(newvar.capitalize() + " " + newmetric)
+                                for model_name_use in ord_metric:
+                                    plt_dict = []
+                                    for val_ws in list_ws:
+                                        plt_dict.append(dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn])
+                                    if tn == 4 and vn == 0:    
+                                        plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                                    else:
+                                        plt.plot(list_ws, plt_dict, color = lnc[cix], linestyle = lns[six])
+                                    cix += 1
+                                    if cix == len(lnc):
+                                        cix = 0
+                                        six += 1
+                                        if six == len(lns):
+                                            six = 0
+                                if tn == 4:
+                                    plt.xticks(list_ws)
+                                    plt.xlabel("Validation " + str(vn + 1))
+                                else:
+                                    plt.xticks([])
+                                if tn == 4 and vn == 0:
+                                    plt.legend(ncol = 3, loc = "lower left", bbox_to_anchor = (0, -1))
+                                if vn == 0:
+                                    plt.ylabel("Test " + str(tn + 1))
+                                else:
+                                    plt.yticks([])
+                        plt.savefig("latest_plot/" + varname + "_" + metric_name_use + "_all.png", bbox_inches = "tight")
+                        plt.close()
+
+        if use_traj:
+            for varname in vartouse_traj:
+                for metric_name_use in metric_dicti_traj:
+                    plt.figure()
+                    newvar = varname
+                    if varname in translate_varname_var:
+                        newvar = translate_varname_var[varname]
+                    if varname in translate_varname_traj:
+                        newvar = translate_varname_traj[varname]
+                    newmetric = metric_name_use
+                    if metric_name_use in metric_translate:
+                        newmetric = metric_translate[metric_name_use]
+                    if metric_name_use in metric_translate_traj:
+                        newmetric = metric_translate_traj[metric_name_use]
+                    title_use = newvar.capitalize()
+                    if use_val == 0:
+                        if use_test > 0:
+                            title_use += "\n" + dicti_my_title[use_test] + " testing dataset"
+                    else:
+                        title_use += "\n" + dicti_my_title[use_test] + " testing dataset " + dicti_my_title[use_val] + " validation dataset"
+                    plt.title(title_use)
+                    cix = 0
+                    six = 0
+                    for model_name_use in ord_metric_traj:
+                        plt_dict = []
+                        for val_ws in list_ws:
+                            if use_val == 0:
+                                if use_test == 0:
+                                    plt_dict.append(dicti_all_traj_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use])
+                                else:
+                                    plt_dict.append(dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][use_test - 1])
+                            else:
+                                plt_dict.append(dicti_all_traj_latest[use_test - 1][use_val - 1][varname][model_name_use][str(val_ws)][metric_name_use])
+                        plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                        cix += 1
+                        if cix == len(lnc):
+                            cix = 0
+                            six += 1
+                            if six == len(lns):
+                                six = 0
+                    plt.xticks(list_ws)
+                    plt.xlabel("Forecasting time")
+                    plt.ylabel(newmetric)
+                    plt.legend(ncol = 3, loc = "lower left", bbox_to_anchor = (0, -0.5))
+                    plt.savefig("latest_plot/" + str(use_test) + "/" + str(use_val) + "/" + varname + "_" + metric_name_use + "_" + str(use_test) + "_" + str(use_val) + ".png", bbox_inches = "tight")
+                    plt.close()
+
+    if use_sizes:
+        print(use_test, use_val)
+        best_dict_total_R2 = dict()
+        best_dict_total_other = dict()
+        best_dict_total = dict()
+        best_dict_R2 = dict()
+        best_dict_other = dict()
+        best_dict = dict()
+        for model_name_use in ord_metric:
+            best_dict_total_R2[model_name_use] = []
+            best_dict_total_other[model_name_use] = []
+            best_dict_total[model_name_use] = []
+            best_dict_R2[model_name_use] = []
+            best_dict_other[model_name_use] = []
+            best_dict[model_name_use] = []
+                        
+        if use_var:
+            for varname in vartouse_var:
+                for metric_name_use in metric_dicti:
+                    for val_ws in list_ws:
+                        min_model = ""
+                        min_val = 1000000
+                        max_model = ""
+                        max_val = -1000000
+                        for model_name_use in ord_metric:
+                            if use_val == 0:
+                                if use_test == 0:
+                                    val_use = dicti_all_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use]
+                                else:
+                                    val_use = dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][use_test - 1]
+                            else:
+                                val_use = dicti_all_latest[use_test - 1][use_val - 1][varname][model_name_use][str(val_ws)][metric_name_use]
+                            if val_use > max_val:
+                                max_model = model_name_use
+                                max_val = val_use
+                            if val_use < min_val:
+                                min_model = model_name_use
+                                min_val = val_use
+                        if "R2" in metric_name_use:
+                            best_dict_total[max_model].append(varname + " " + metric_name_use + " " + str(val_ws))
+                            best_dict[max_model].append(varname + " " + metric_name_use + " " + str(val_ws))
+                            best_dict_total_R2[max_model].append(varname + " " + metric_name_use + " " + str(val_ws))
+                            best_dict_R2[max_model].append(varname + " " + metric_name_use + " " + str(val_ws))
+                        else:
+                            best_dict_total[min_model].append(varname + " " + metric_name_use + " " + str(val_ws))
+                            best_dict[min_model].append(varname + " " + metric_name_use + " " + str(val_ws))
+                            best_dict_total_other[min_model].append(varname + " " + metric_name_use + " " + str(val_ws))
+                            best_dict_other[min_model].append(varname + " " + metric_name_use + " " + str(val_ws))
+
+            print("vars")
+            print("R2")
+            for model_name_use in dict(sorted(best_dict_R2.items(), key = lambda x: len(x[1]), reverse = True)):
+                print(model_name_use, len(best_dict_R2[model_name_use]), len(best_dict_R2[model_name_use]) / (len(vartouse_var) * sum(["R2" in x for x in metric_dicti]) * len(list_ws)) * 100)
                 break
-            first_line = first_line.replace("{|c|}", "{|"+ longc + "|}")
+            print("other")
+            for model_name_use in dict(sorted(best_dict_other.items(), key = lambda x: len(x[1]), reverse = True)):
+                print(model_name_use, len(best_dict_other[model_name_use]), len(best_dict_other[model_name_use]) / (len(vartouse_var) * (len(metric_dicti) - sum(["R2" in x for x in metric_dicti])) * len(list_ws)) * 100)
+                break
+            print("all")
+            for model_name_use in dict(sorted(best_dict.items(), key = lambda x: len(x[1]), reverse = True)):
+                print(model_name_use, len(best_dict[model_name_use]), len(best_dict[model_name_use]) / (len(vartouse_var) * len(metric_dicti) * len(list_ws)) * 100)
+                break
+
+        if use_traj:
+            best_dict = dict()
             for model_name_use in ord_metric_traj:
-                if "offsets" in model_name_use:
-                    continue
-                str_pr += "\t\t\t\multirow{2}{*}{" + model_name_use.replace("_", " ").replace(" 256", "").replace(" longlat speed direction", "") + "}"
-                for val_ws in list_ws: 
-                    vv = dicti_all_traj_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use]   
-                    vv = np.round(vv * (10 ** metric_dicti_traj[metric_name_use]) * (10 ** mul_metric), rv_metric)
-                    vv2 = dicti_all_traj_latest_std[varname][model_name_use][str(val_ws)][metric_name_use] 
-                    vv2 = np.round(vv2 * (10 ** metric_dicti_traj[metric_name_use]) * (10 ** mul_metric), rv_metric)
-                    old_str = vv
-                    if "e+" in str(vv):
-                        parts_12 = str(vv).split("e+")
-                        main_part = float(parts_12[0])
-                        exp_part = int(parts_12[1])
-                        vv = str(np.round(main_part, rv_metric)) + " \\times 10^{" + str(exp_part) + "}"
-                        errs.add((varname, model_name_use, str(val_ws), metric_name_use, old_str, vv))
-                    if "e+" in str(vv2):
-                        old_str2 = vv2
-                        parts_12 = str(vv2).split("e+")
-                        main_part = float(parts_12[0])
-                        exp_part = int(parts_12[1])
-                        vv2 = str(np.round(main_part, rv_metric)) + " \\times 10^{" + str(exp_part) + "}"
-                        errs.add((varname, model_name_use, str(val_ws), metric_name_use, old_str2, vv2))
-                    str_pr += " & $" + str(vv) + "$"
-                    vv = old_str
-                    if vv in set_values[val_ws]:
-                        duplicate_val = True
-                    if vv in set_values_all:
-                        duplicate_val_all = True
-                    if "$0." in str_pr:
-                        too_small = True
-                    set_values[val_ws].add(vv)
-                    set_values_all.add(vv)
-                    if vv > max_col[val_ws][0]:
-                        max_col[val_ws] = (vv, vv2)
-                    if vv < min_col[val_ws][0]:
-                        min_col[val_ws] = (vv, vv2)
-                str_pr += " \\\\\n"
-                str_pr += "\t\t\t"
-                for val_ws in list_ws: 
-                    vv = dicti_all_traj_latest_std[varname][model_name_use][str(val_ws)][metric_name_use]  
-                    vv = np.round(vv * (10 ** metric_dicti_traj[metric_name_use]) * (10 ** mul_metric), rv_metric)
-                    if "e+" in str(vv):
-                        old_str = vv
-                        parts_12 = str(vv).split("e+")
-                        main_part = float(parts_12[0])
-                        exp_part = int(parts_12[1])
-                        vv = str(np.round(main_part, rv_metric)) + " \\times 10^{" + str(exp_part) + "}"
-                        errs.add((varname, model_name_use, str(val_ws), metric_name_use, old_str, vv))
-                    str_pr += " & ($" + str(vv) + "$)"
-                str_pr += " \\\\ \\hline\n"
-            if "R2" not in metric_name_use and "NRMSE" not in metric_name_use:
-                if too_small:
-                    mul_metric += 1
-                    rv_metric = 2
-                elif duplicate_val_all:
-                    rv_metric += 1
-            else: 
-                rv_metric += 1
-            if ("R2" in metric_name_use or "NRMSE" in metric_name_use) and (rv_metric > 3 or mul_metric > 3):
+                best_dict_R2[model_name_use] = []
+                best_dict_other[model_name_use] = []
+                best_dict[model_name_use] = []
+
+            for varname in vartouse_traj:
+                for metric_name_use in metric_dicti_traj:
+                    for val_ws in list_ws:
+                        min_model = ""
+                        min_val = 1000000
+                        max_model = ""
+                        max_val = -1000000
+                        for model_name_use in ord_metric_traj:
+                            if use_val == 0:
+                                if use_test == 0:
+                                    val_use = dicti_all_traj_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use]
+                                else:
+                                    val_use = dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][use_test - 1]
+                            else:
+                                val_use = dicti_all_traj_latest[use_test - 1][use_val - 1][varname][model_name_use][str(val_ws)][metric_name_use]
+                            if val_use > max_val:
+                                max_model = model_name_use
+                                max_val = val_use
+                            if val_use < min_val:
+                                min_model = model_name_use
+                                min_val = val_use
+                        if "R2" in metric_name_use:
+                            best_dict_total[max_model].append(varname + " " + metric_name_use + " " + str(val_ws))
+                            best_dict[max_model].append(varname + " " + metric_name_use + " " + str(val_ws))
+                            best_dict_total_R2[max_model].append(varname + " " + metric_name_use + " " + str(val_ws))
+                            best_dict_R2[max_model].append(varname + " " + metric_name_use + " " + str(val_ws))
+                        else:
+                            best_dict_total[min_model].append(varname + " " + metric_name_use + " " + str(val_ws))
+                            best_dict[min_model].append(varname + " " + metric_name_use + " " + str(val_ws))
+                            best_dict_total_other[min_model].append(varname + " " + metric_name_use + " " + str(val_ws))
+                            best_dict_other[min_model].append(varname + " " + metric_name_use + " " + str(val_ws))
+
+            print("trajs")
+            print("R2")
+            for model_name_use in dict(sorted(best_dict_R2.items(), key = lambda x: len(x[1]), reverse = True)):
+                print(model_name_use, len(best_dict_R2[model_name_use]), len(best_dict_R2[model_name_use]) / (len(vartouse_traj) * sum(["R2" in x for x in metric_dicti_traj]) * len(list_ws)) * 100)
                 break
-            if rv_metric > 3 or mul_metric > 6:
+            print("other")
+            for model_name_use in dict(sorted(best_dict_other.items(), key = lambda x: len(x[1]), reverse = True)):
+                print(model_name_use, len(best_dict_other[model_name_use]), len(best_dict_other[model_name_use]) / (len(vartouse_traj) * (len(metric_dicti_traj) - sum(["R2" in x for x in metric_dicti_traj])) * len(list_ws)) * 100)
                 break
-        supposed_val[metric_name_use + "_" + varname] = 0
-        if "R2" in metric_name_use:
-            for val_ws in list_ws:
-                supposed_val[metric_name_use + "_" + varname] += 2
-                str_pr = str_pr.replace("$" + str(max_col[val_ws][0]) + "$", "$\\mathbf{" + str(max_col[val_ws][0]) + "}$") 
-                str_pr = str_pr.replace("($" + str(max_col[val_ws][1]) + "$)", "\\textbf{(}$\\mathbf{" + str(max_col[val_ws][1]) + "}$\\textbf{)}") 
-        else:
-            for val_ws in list_ws:
-                supposed_val[metric_name_use + "_" + varname] += 2
-                str_pr = str_pr.replace("$" + str(min_col[val_ws][0]) + "$", "$\\mathbf{" + str(min_col[val_ws][0]) + "}$")
-                str_pr = str_pr.replace("($" + str(min_col[val_ws][1]) + "$)", "\\textbf{(}$\\mathbf{" + str(min_col[val_ws][1]) + "}$\\textbf{)}") 
-        newstart = start_of_table.replace("METRICNAME", metric_name_use).replace("VARNAME_", varname.replace(" ", "_") + "_").replace("NRMSE ", "NRMSE (\%) ").replace("R2 ", "$R^{2}$ (\%) ").replace("VARNAME", translate_varname[varname])
-        if "R2" not in metric_name_use and "NRMSE" not in metric_name_use and mul_metric != 0:
-            newstart = newstart.replace(metric_name_use + " ", metric_name_use + " ($\\times 10^{-" + str(mul_metric) + "}$) ")
-        if "wt" in metric_name_use:
-            newstart = newstart.replace("_wt", "").replace("trajectories", "trajectories and time stamps")
-        print(newstart.replace("Euclid ", "The Euclidean distance "))
-        print(first_line + " \\\\ \\hline")
-        print(str_pr + end_of_table)
-        for e in errs:
-            total_errs.add(e)
-        total_errs2[metric_name_use + "_" + varname] = str_pr.count("mathbf")
+            print("all")
+            for model_name_use in dict(sorted(best_dict.items(), key = lambda x: len(x[1]), reverse = True)):
+                print(model_name_use, len(best_dict[model_name_use]), len(best_dict[model_name_use]) / (len(vartouse_traj) * len(metric_dicti_traj) * len(list_ws)) * 100)
+                break
 
-errs2 = set()
-errs3 = set()
-errs4 = dict()
-for e in total_errs:
-    errs2.add((e[1], e[2]))
-    errs3.add((e[0], e[1], e[2]))
-    if (e[0], e[1], e[2], e[3]) not in errs4:
-        errs4[(e[0], e[1], e[2], e[3])] = set()
-    errs4[(e[0], e[1], e[2], e[3])].add((e[4], e[5]))
-#print(errs4)
+        print("all")
+        print("R2")
+        for model_name_use in dict(sorted(best_dict_total_R2.items(), key = lambda x: len(x[1]), reverse = True)):
+            print(model_name_use, len(best_dict_total_R2[model_name_use]), len(best_dict_total_R2[model_name_use]) / ((len(vartouse_var) + len(vartouse_traj)) * (sum(["R2" in x for x in metric_dicti]) + sum(["R2" in x for x in metric_dicti_traj])) * len(list_ws)) * 100)
+            break
+        print("other")
+        for model_name_use in dict(sorted(best_dict_total_other.items(), key = lambda x: len(x[1]), reverse = True)):
+            print(model_name_use, len(best_dict_total_other[model_name_use]), len(best_dict_total_other[model_name_use]) / ((len(vartouse_var) + len(vartouse_traj)) * (len(metric_dicti) + len(metric_dicti_traj) - sum(["R2" in x for x in metric_dicti]) - sum(["R2" in x for x in metric_dicti_traj])) * len(list_ws)) * 100)
+            break
+        print("all")
+        for model_name_use in dict(sorted(best_dict_total.items(), key = lambda x: len(x[1]), reverse = True)):
+            print(model_name_use, len(best_dict_total[model_name_use]), len(best_dict_total[model_name_use]) / ((len(vartouse_var) + len(vartouse_traj)) * (len(metric_dicti) + len(metric_dicti_traj)) * len(list_ws)) * 100)
+            break
 
-for model_name_use_val_ws in errs2:
-    model_name_use, val_ws = model_name_use_val_ws
-    print(model_name_use, val_ws)
-    for varname in dicti_all_traj_latest_avg:
-        #if (varname, model_name_use, val_ws) not in errs3:
-            #continue
-        for metric_name_use in dicti_all_traj_latest_avg[varname][model_name_use][val_ws]:
-            if (varname, model_name_use, val_ws, metric_name_use) not in errs4:
-                continue
-            print(varname, metric_name_use, dicti_all_traj_latest_avg[varname][model_name_use][val_ws][metric_name_use], dicti_all_traj_latest_std[varname][model_name_use][val_ws][metric_name_use])
-            for v in errs4[(varname, model_name_use, val_ws, metric_name_use)]:
-                print(v)
-            #print(dicti_all_traj_latest_short[varname][model_name_use][val_ws][metric_name_use])
-    for varname in dicti_all_latest_avg:
-        #if (varname, model_name_use, val_ws) not in errs3:
-            #continue
-        for metric_name_use in dicti_all_latest_avg[varname][model_name_use][val_ws]:
-            if (varname, model_name_use, val_ws, metric_name_use) not in errs4:
-                continue
-            print(varname, metric_name_use, dicti_all_latest_avg[varname][model_name_use][val_ws][metric_name_use], dicti_all_latest_std[varname][model_name_use][val_ws][metric_name_use])
-            for v in errs4[(varname, model_name_use, val_ws, metric_name_use)]:
-                print(v)
-            #print(dicti_all_latest_short[varname][model_name_use][val_ws][metric_name_use])
+use_table = True
+use_plot = True
+use_sizes = True
+use_test = 0
+use_val = 0
+use_std = True
+use_var = True
+use_traj = True
 
-for v in total_errs2:
-    if total_errs2[v] != supposed_val[v]:
-        print(v, total_errs2[v], supposed_val[v])
+my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_std = use_std, use_var = use_var, use_traj = use_traj)
+for use_test in range(0, 1):
+    my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_test = use_test, use_std = use_std, use_var = use_var, use_traj = use_traj)
+    for use_val in range(0, 1):
+        my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_test = use_test, use_val = use_val, use_std = use_std, use_var = use_var, use_traj = use_traj)
