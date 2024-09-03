@@ -111,6 +111,8 @@ save_object("dicti_all_traj_latest_avg", dicti_all_traj_latest_avg)
 save_object("dicti_all_traj_latest_std", dicti_all_traj_latest_std)
 
 total_errs = set()
+total_errs2 = dict()
+supposed_val = dict()
 
 metrictouse = ["MAE", "R2"]
 vartouse = ["direction", "speed", "longitude_no_abs", "latitude_no_abs"]
@@ -163,14 +165,14 @@ for metric_name_use in metrictouse:
                         parts_12 = str(vv).split("e+")
                         main_part = float(parts_12[0])
                         exp_part = int(parts_12[1])
-                        vv = str(np.round(main_part, rv_metric)) + " \times 10^{" + str(exp_part) + "}"
+                        vv = str(np.round(main_part, rv_metric)) + " \\times 10^{" + str(exp_part) + "}"
                         errs.add((varname, model_name_use, str(val_ws), metric_name_use, old_str, vv))
                     if "e+" in str(vv2):
                         old_str2 = vv2
                         parts_12 = str(vv2).split("e+")
                         main_part = float(parts_12[0])
                         exp_part = int(parts_12[1])
-                        vv2 = str(np.round(main_part, rv_metric)) + " \times 10^{" + str(exp_part) + "}"
+                        vv2 = str(np.round(main_part, rv_metric)) + " \\times 10^{" + str(exp_part) + "}"
                         errs.add((varname, model_name_use, str(val_ws), metric_name_use, old_str2, vv2))
                     str_pr += " & $" + str(vv) + "$"
                     vv = old_str
@@ -186,7 +188,7 @@ for metric_name_use in metrictouse:
                         max_col[val_ws] = (vv, vv2)
                     if vv < min_col[val_ws][0]:
                         min_col[val_ws] = (vv, vv2)
-                str_pr += " \\\\ \\hline\n"
+                str_pr += " \\\\\n"
                 str_pr += "\t\t\t"
                 for val_ws in list_ws: 
                     vv = dicti_all_latest_std[varname][model_name_use][str(val_ws)][metric_name_use]  
@@ -196,9 +198,9 @@ for metric_name_use in metrictouse:
                         parts_12 = str(vv).split("e+")
                         main_part = float(parts_12[0])
                         exp_part = int(parts_12[1])
-                        vv = str(np.round(main_part, rv_metric)) + " \times 10^{" + str(exp_part) + "}"
+                        vv = str(np.round(main_part, rv_metric)) + " \\times 10^{" + str(exp_part) + "}"
                         errs.add((varname, model_name_use, str(val_ws), metric_name_use, old_str, vv))
-                    str_pr += " & $" + str(vv) + "$"
+                    str_pr += " & ($" + str(vv) + "$)"
                 str_pr += " \\\\ \\hline\n"
             if "R2" not in metric_name_use and "NRMSE" not in metric_name_use:
                 if too_small:
@@ -212,14 +214,17 @@ for metric_name_use in metrictouse:
                 break
             if rv_metric > 3 or mul_metric > 6:
                 break
+        supposed_val[metric_name_use + "_" + varname] = 0
         if "R2" in metric_name_use:
             for val_ws in list_ws:
+                supposed_val[metric_name_use + "_" + varname] += 2
                 str_pr = str_pr.replace("$" + str(max_col[val_ws][0]) + "$", "$\\mathbf{" + str(max_col[val_ws][0]) + "}$") 
-                str_pr = str_pr.replace("($" + str(max_col[val_ws][1]) + "$)", "($\\mathbf{" + str(max_col[val_ws][1]) + "}$)") 
+                str_pr = str_pr.replace("($" + str(max_col[val_ws][1]) + "$)", "\\textbf{(}$\\mathbf{" + str(max_col[val_ws][1]) + "}$\\textbf{)}") 
         else:
             for val_ws in list_ws:
+                supposed_val[metric_name_use + "_" + varname] += 2
                 str_pr = str_pr.replace("$" + str(min_col[val_ws][0]) + "$", "$\\mathbf{" + str(min_col[val_ws][0]) + "}$") 
-                str_pr = str_pr.replace("($" + str(min_col[val_ws][1]) + "$)", "($\\mathbf{" + str(min_col[val_ws][1]) + "}$)") 
+                str_pr = str_pr.replace("($" + str(min_col[val_ws][1]) + "$)", "\\textbf{(}$\\mathbf{" + str(min_col[val_ws][1]) + "}$\\textbf{)}") 
         newstart = start_of_table.replace("METRICNAME", metric_name_use).replace("VARNAME_", varname + "_").replace("NRMSE ", "NRMSE (\%) ").replace("R2 ", "$R^{2}$ (\%) ").replace("VARNAME ", translate_varname[varname] + " ")
         if "R2" not in metric_name_use and "NRMSE" not in metric_name_use and mul_metric != 0:
             newstart = newstart.replace(metric_name_use + " ", metric_name_use + " ($\\times 10^{-" + str(mul_metric) + "}$) ")
@@ -228,6 +233,7 @@ for metric_name_use in metrictouse:
         print(str_pr + end_of_table)
         for e in errs:
             total_errs.add(e)
+        total_errs2[metric_name_use + "_" + varname] = str_pr.count("mathbf")
 
 metrictouse = ["Euclid", "MAE", "R2"]
 vartouse = ["long speed actual dir", "long no abs"]
@@ -283,14 +289,14 @@ for metric_name_use in metrictouse:
                         parts_12 = str(vv).split("e+")
                         main_part = float(parts_12[0])
                         exp_part = int(parts_12[1])
-                        vv = str(np.round(main_part, rv_metric)) + " \times 10^{" + str(exp_part) + "}"
+                        vv = str(np.round(main_part, rv_metric)) + " \\times 10^{" + str(exp_part) + "}"
                         errs.add((varname, model_name_use, str(val_ws), metric_name_use, old_str, vv))
                     if "e+" in str(vv2):
                         old_str2 = vv2
                         parts_12 = str(vv2).split("e+")
                         main_part = float(parts_12[0])
                         exp_part = int(parts_12[1])
-                        vv2 = str(np.round(main_part, rv_metric)) + " \times 10^{" + str(exp_part) + "}"
+                        vv2 = str(np.round(main_part, rv_metric)) + " \\times 10^{" + str(exp_part) + "}"
                         errs.add((varname, model_name_use, str(val_ws), metric_name_use, old_str2, vv2))
                     str_pr += " & $" + str(vv) + "$"
                     vv = old_str
@@ -306,7 +312,7 @@ for metric_name_use in metrictouse:
                         max_col[val_ws] = (vv, vv2)
                     if vv < min_col[val_ws][0]:
                         min_col[val_ws] = (vv, vv2)
-                str_pr += " \\\\ \\hline\n"
+                str_pr += " \\\\\n"
                 str_pr += "\t\t\t"
                 for val_ws in list_ws: 
                     vv = dicti_all_traj_latest_std[varname][model_name_use][str(val_ws)][metric_name_use]  
@@ -316,7 +322,7 @@ for metric_name_use in metrictouse:
                         parts_12 = str(vv).split("e+")
                         main_part = float(parts_12[0])
                         exp_part = int(parts_12[1])
-                        vv = str(np.round(main_part, rv_metric)) + " \times 10^{" + str(exp_part) + "}"
+                        vv = str(np.round(main_part, rv_metric)) + " \\times 10^{" + str(exp_part) + "}"
                         errs.add((varname, model_name_use, str(val_ws), metric_name_use, old_str, vv))
                     str_pr += " & ($" + str(vv) + "$)"
                 str_pr += " \\\\ \\hline\n"
@@ -332,14 +338,17 @@ for metric_name_use in metrictouse:
                 break
             if rv_metric > 3 or mul_metric > 6:
                 break
+        supposed_val[metric_name_use + "_" + varname] = 0
         if "R2" in metric_name_use:
             for val_ws in list_ws:
+                supposed_val[metric_name_use + "_" + varname] += 2
                 str_pr = str_pr.replace("$" + str(max_col[val_ws][0]) + "$", "$\\mathbf{" + str(max_col[val_ws][0]) + "}$") 
-                str_pr = str_pr.replace("($" + str(max_col[val_ws][1]) + "$)", "($\\mathbf{" + str(max_col[val_ws][1]) + "}$)") 
+                str_pr = str_pr.replace("($" + str(max_col[val_ws][1]) + "$)", "\\textbf{(}$\\mathbf{" + str(max_col[val_ws][1]) + "}$\\textbf{)}") 
         else:
             for val_ws in list_ws:
+                supposed_val[metric_name_use + "_" + varname] += 2
                 str_pr = str_pr.replace("$" + str(min_col[val_ws][0]) + "$", "$\\mathbf{" + str(min_col[val_ws][0]) + "}$")
-                str_pr = str_pr.replace("($" + str(min_col[val_ws][1]) + "$)", "($\\mathbf{" + str(min_col[val_ws][1]) + "}$)") 
+                str_pr = str_pr.replace("($" + str(min_col[val_ws][1]) + "$)", "\\textbf{(}$\\mathbf{" + str(min_col[val_ws][1]) + "}$\\textbf{)}") 
         newstart = start_of_table.replace("METRICNAME", metric_name_use).replace("VARNAME_", varname.replace(" ", "_") + "_").replace("NRMSE ", "NRMSE (\%) ").replace("R2 ", "$R^{2}$ (\%) ").replace("VARNAME", translate_varname[varname])
         if "R2" not in metric_name_use and "NRMSE" not in metric_name_use and mul_metric != 0:
             newstart = newstart.replace(metric_name_use + " ", metric_name_use + " ($\\times 10^{-" + str(mul_metric) + "}$) ")
@@ -350,6 +359,7 @@ for metric_name_use in metrictouse:
         print(str_pr + end_of_table)
         for e in errs:
             total_errs.add(e)
+        total_errs2[metric_name_use + "_" + varname] = str_pr.count("mathbf")
 
 errs2 = set()
 errs3 = set()
@@ -385,3 +395,7 @@ for model_name_use_val_ws in errs2:
             for v in errs4[(varname, model_name_use, val_ws, metric_name_use)]:
                 print(v)
             #print(dicti_all_latest_short[varname][model_name_use][val_ws][metric_name_use])
+
+for v in total_errs2:
+    if total_errs2[v] != supposed_val[v]:
+        print(v, total_errs2[v], supposed_val[v])
