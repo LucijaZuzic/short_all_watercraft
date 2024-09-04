@@ -541,7 +541,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_test
         if use_var:
             for varname in vartouse_var:
                 for metric_name_use in metric_dicti:
-                    plt.figure()
+                    plt.figure(figsize = (16, 9), dpi = 600)
                     newvar = varname
                     if varname in translate_varname_var:
                         newvar = translate_varname_var[varname]
@@ -588,7 +588,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_test
             if use_test == 0 and use_val == 0:
                 for varname in vartouse_var:
                     for metric_name_use in metric_dicti:
-                        plt.figure()
+                        plt.figure(figsize = (16, 9), dpi = 600)
                         newvar = varname
                         if varname in translate_varname_var:
                             newvar = translate_varname_var[varname]
@@ -629,7 +629,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_test
                         
                 for varname in vartouse_var:
                     for metric_name_use in metric_dicti:
-                        plt.figure()
+                        plt.figure(figsize = (16, 9), dpi = 600)
                         newvar = varname
                         if varname in translate_varname_var:
                             newvar = translate_varname_var[varname]
@@ -672,7 +672,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_test
 
                 for varname in vartouse_var:
                     for metric_name_use in metric_dicti:
-                        plt.figure()
+                        plt.figure(figsize = (16, 9), dpi = 600)
                         newvar = varname
                         if varname in translate_varname_var:
                             newvar = translate_varname_var[varname]
@@ -721,7 +721,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_test
         if use_traj:
             for varname in vartouse_traj:
                 for metric_name_use in metric_dicti_traj:
-                    plt.figure()
+                    plt.figure(figsize = (16, 9), dpi = 600)
                     newvar = varname
                     if varname in translate_varname_var:
                         newvar = translate_varname_var[varname]
@@ -764,6 +764,139 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_test
                     plt.legend(ncol = 3, loc = "lower left", bbox_to_anchor = (0, -0.5))
                     plt.savefig("latest_plot/" + str(use_test) + "/" + str(use_val) + "/" + varname + "_" + metric_name_use + "_" + str(use_test) + "_" + str(use_val) + ".png", bbox_inches = "tight")
                     plt.close()
+
+            if use_test == 0 and use_val == 0:
+                for varname in vartouse_traj:
+                    for metric_name_use in metric_dicti_traj:
+                        plt.figure(figsize = (16, 9), dpi = 600)
+                        newvar = varname
+                        if varname in translate_varname_var:
+                            newvar = translate_varname_var[varname]
+                        if varname in translate_varname_traj:
+                            newvar = translate_varname_traj[varname]
+                        newmetric = metric_name_use
+                        if metric_name_use in metric_translate:
+                            newmetric = metric_translate[metric_name_use]
+                        if metric_name_use in metric_translate_traj:
+                            newmetric = metric_translate_traj[metric_name_use]
+                        for tn in range(5):
+                            cix = 0
+                            six = 0 
+                            plt.subplot(5, 1, tn + 1)
+                            if tn == 0:
+                                plt.title(newvar.capitalize() + " " + newmetric)
+                            for model_name_use in ord_metric_traj:
+                                plt_dict = []
+                                for val_ws in list_ws:
+                                    plt_dict.append(dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn])
+                                if tn == 4:    
+                                    plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                                else:
+                                    plt.plot(list_ws, plt_dict, color = lnc[cix], linestyle = lns[six])
+                                cix += 1
+                                if cix == len(lnc):
+                                    cix = 0
+                                    six += 1
+                                    if six == len(lns):
+                                        six = 0
+                            if tn == 4:
+                                plt.xticks(list_ws)
+                                plt.xlabel("Forecasting time")
+                                plt.legend(ncol = 3, loc = "lower left", bbox_to_anchor = (0, -1))
+                            plt.ylabel("Test " + str(tn + 1))
+                        plt.savefig("latest_plot/" + varname + "_" + metric_name_use + "_test.png", bbox_inches = "tight")
+                        plt.close()
+                        
+                for varname in vartouse_traj:
+                    for metric_name_use in metric_dicti_traj:
+                        plt.figure(figsize = (16, 9), dpi = 600)
+                        newvar = varname
+                        if varname in translate_varname_var:
+                            newvar = translate_varname_var[varname]
+                        if varname in translate_varname_traj:
+                            newvar = translate_varname_traj[varname]
+                        newmetric = metric_name_use
+                        if metric_name_use in metric_translate:
+                            newmetric = metric_translate[metric_name_use]
+                        if metric_name_use in metric_translate_traj:
+                            newmetric = metric_translate_traj[metric_name_use]
+                        for tn in range(5):
+                            cix = 0
+                            six = 0 
+                            plt.subplot(1, 5, tn + 1)
+                            if tn == 2:
+                                plt.title(newvar.capitalize() + " " + newmetric)
+                            for model_name_use in ord_metric_traj:
+                                plt_dict = []
+                                for val_ws in list_ws:
+                                    plt_dict.append(dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn])
+                                if tn == 0:    
+                                    plt.plot(plt_dict, list_ws, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                                else:
+                                    plt.plot(plt_dict, list_ws, color = lnc[cix], linestyle = lns[six])
+                                cix += 1
+                                if cix == len(lnc):
+                                    cix = 0
+                                    six += 1
+                                    if six == len(lns):
+                                        six = 0
+                            if tn == 0:
+                                plt.yticks(list_ws)
+                                plt.ylabel("Forecasting time")
+                                plt.legend(ncol = 3, loc = "lower left", bbox_to_anchor = (0, -0.5))
+                            else:
+                                plt.yticks([])
+                            plt.xlabel("Test " + str(tn + 1))
+                        plt.savefig("latest_plot/" + varname + "_" + metric_name_use + "_reverse_test.png", bbox_inches = "tight")
+                        plt.close()
+
+                for varname in vartouse_traj:
+                    for metric_name_use in metric_dicti_traj:
+                        plt.figure(figsize = (16, 9), dpi = 600)
+                        newvar = varname
+                        if varname in translate_varname_var:
+                            newvar = translate_varname_var[varname]
+                        if varname in translate_varname_traj:
+                            newvar = translate_varname_traj[varname]
+                        newmetric = metric_name_use
+                        if metric_name_use in metric_translate:
+                            newmetric = metric_translate[metric_name_use]
+                        if metric_name_use in metric_translate_traj:
+                            newmetric = metric_translate_traj[metric_name_use]
+                        for tn in range(5):
+                            for vn in range(5):
+                                cix = 0
+                                six = 0 
+                                plt.subplot(5, 5, tn * 5 + vn + 1)
+                                if tn == 0 and vn == 2:
+                                    plt.title(newvar.capitalize() + " " + newmetric)
+                                for model_name_use in ord_metric_traj:
+                                    plt_dict = []
+                                    for val_ws in list_ws:
+                                        plt_dict.append(dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn])
+                                    if tn == 4 and vn == 0:    
+                                        plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                                    else:
+                                        plt.plot(list_ws, plt_dict, color = lnc[cix], linestyle = lns[six])
+                                    cix += 1
+                                    if cix == len(lnc):
+                                        cix = 0
+                                        six += 1
+                                        if six == len(lns):
+                                            six = 0
+                                if tn == 4:
+                                    plt.xticks(list_ws)
+                                    plt.xlabel("Validation " + str(vn + 1))
+                                else:
+                                    plt.xticks([])
+                                if tn == 4 and vn == 0:
+                                    plt.legend(ncol = 3, loc = "lower left", bbox_to_anchor = (0, -1))
+                                if vn == 0:
+                                    plt.ylabel("Test " + str(tn + 1))
+                                else:
+                                    plt.yticks([])
+                        plt.savefig("latest_plot/" + varname + "_" + metric_name_use + "_all.png", bbox_inches = "tight")
+                        plt.close()
 
     if use_sizes:
         print(use_test, use_val)
@@ -901,7 +1034,7 @@ use_sizes = True
 use_test = 0
 use_val = 0
 use_std = True
-use_var = True
+use_var = False
 use_traj = True
 
 my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_std = use_std, use_var = use_var, use_traj = use_traj)
