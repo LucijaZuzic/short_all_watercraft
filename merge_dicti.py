@@ -488,7 +488,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                         newstart = newstart.replace(metric_name_use + " ", metric_name_use + " ($\\times 10^{-" + str(mul_metric) + "}$) ")
                     if "wt" in metric_name_use:
                         newstart = newstart.replace("_wt", "").replace("trajectories", "trajectories and time stamps")
-                    print(newstart.replace("Euclid ", "The Euclidean distance "))
+                    print(newstart.replace("Euclid ", "Euclidean distance "))
                     print(first_line + " \\\\ \\hline")
                     print(str_pr + end_of_table)
                     for e in errs:
