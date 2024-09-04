@@ -174,7 +174,9 @@ dicti_my_title = {0: "",
                   5: "$5^{th}$"}
 
 def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outliers = True, use_minmax = True, use_single = True, use_vertical = True, use_horizontal = True, use_all = True, use_test = 0, use_val = 0, use_std = True, use_var = True, use_traj = True):
-
+    if use_val > 0 and use_test == 0:
+        return
+    print(use_test, use_val)
     metrictouse_traj = ["Euclid", "MAE", "R2"]
     vartouse_traj = ["long speed actual dir", "long no abs"]
     translate_varname_traj = {"long speed ones dir": "speed, heading, a fixed one-second time interval",
@@ -606,7 +608,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                         plt.ylim(lims_for_plt[varname + metric_name_use][0], lims_for_plt[varname + metric_name_use][1])
                         plt.xticks(list_ws)
                         ytick_vals = []
-                        stepval = (lims_for_plt[varname + metric_name_use][0] + lims_for_plt[varname + metric_name_use][1]) / 10
+                        stepval = (lims_for_plt[varname + metric_name_use][1] - lims_for_plt[varname + metric_name_use][0]) / 10
                         for ytick_val in np.arange(lims_for_plt[varname + metric_name_use][0], lims_for_plt[varname + metric_name_use][1] + stepval, stepval):
                             ytick_vals.append(ytick_val)
                         plt.yticks(ytick_vals)
@@ -712,7 +714,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                 six = 0 
                                 plt.subplot(1, 5, tn + 1)
                                 plt.ylim(min(list_ws), max(list_ws))
-                                plt.xticks([lims_for_plt[varname + metric_name_use + str(tn)][0], (lims_for_plt[varname + metric_name_use + str(tn)][0] + lims_for_plt[varname + metric_name_use + str(tn)][1]) * 0.6])
+                                plt.xticks([lims_for_plt[varname + metric_name_use + str(tn)][0], lims_for_plt[varname + metric_name_use + str(tn)][0] + (lims_for_plt[varname + metric_name_use + str(tn)][1] - lims_for_plt[varname + metric_name_use + str(tn)][0]) * 0.6])
                                 plt.xlim(lims_for_plt[varname + metric_name_use + str(tn)][0], lims_for_plt[varname + metric_name_use + str(tn)][1])
                                 if tn == 2:
                                     plt.title(newvar.capitalize() + " " + newmetric)
@@ -735,7 +737,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                 if tn == 0:
                                     plt.yticks(list_ws)
                                     plt.ylabel("Forecasting time")
-                                    plt.legend(ncol = 4, loc = "lower left", bbox_to_anchor = (0, -0.45))
+                                    plt.legend(ncol = 4, loc = "lower left", bbox_to_anchor = (0, -0.43))
                                 else:
                                     plt.yticks([])
                                 plt.xlabel(newmetric.replace(" distance", "\ndistance").replace(" (time)", "\n(time)") + "\nTest " + str(tn + 1))
@@ -877,7 +879,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                         plt.ylim(lims_for_plt[varname + metric_name_use][0], lims_for_plt[varname + metric_name_use][1])
                         plt.xticks(list_ws)
                         ytick_vals = []
-                        stepval = (lims_for_plt[varname + metric_name_use][0] + lims_for_plt[varname + metric_name_use][1]) / 10
+                        stepval = (lims_for_plt[varname + metric_name_use][1] - lims_for_plt[varname + metric_name_use][0]) / 10
                         for ytick_val in np.arange(lims_for_plt[varname + metric_name_use][0], lims_for_plt[varname + metric_name_use][1] + stepval, stepval):
                             ytick_vals.append(ytick_val)
                         plt.yticks(ytick_vals)
@@ -983,7 +985,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                 six = 0 
                                 plt.subplot(1, 5, tn + 1)
                                 plt.ylim(min(list_ws), max(list_ws))
-                                plt.xticks([lims_for_plt[varname + metric_name_use + str(tn)][0], (lims_for_plt[varname + metric_name_use + str(tn)][0] + lims_for_plt[varname + metric_name_use + str(tn)][1]) * 0.6])
+                                plt.xticks([lims_for_plt[varname + metric_name_use + str(tn)][0], lims_for_plt[varname + metric_name_use + str(tn)][0] + (lims_for_plt[varname + metric_name_use + str(tn)][1] - lims_for_plt[varname + metric_name_use + str(tn)][0]) * 0.6])
                                 plt.xlim(lims_for_plt[varname + metric_name_use + str(tn)][0], lims_for_plt[varname + metric_name_use + str(tn)][1])
                                 if tn == 2:
                                     plt.title(newvar.capitalize() + " " + newmetric)
@@ -1006,7 +1008,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                 if tn == 0:
                                     plt.yticks(list_ws)
                                     plt.ylabel("Forecasting time")
-                                    plt.legend(ncol = 4, loc = "lower left", bbox_to_anchor = (0, -0.45))
+                                    plt.legend(ncol = 4, loc = "lower left", bbox_to_anchor = (0, -0.43))
                                 else:
                                     plt.yticks([])
                                 plt.xlabel(newmetric.replace(" distance", "\ndistance").replace(" (time)", "\n(time)") + "\nTest " + str(tn + 1))
@@ -1581,11 +1583,11 @@ use_all = True
 use_test = 0
 use_val = 0
 use_std = False
-use_var = False
+use_var = True
 use_traj = True
 
-my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_outliers = use_outliers, use_minmax = use_minmax, use_single = use_single, use_vertical = use_vertical, use_horizontal = use_horizontal, use_all = use_all, use_std = use_std, use_var = use_var, use_traj = use_traj)
-for use_test in range(1, 2):
+#my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_outliers = use_outliers, use_minmax = use_minmax, use_single = use_single, use_vertical = use_vertical, use_horizontal = use_horizontal, use_all = use_all, use_std = use_std, use_var = use_var, use_traj = use_traj)
+for use_test in range(0, 6):
     #my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_outliers = use_outliers, use_minmax = use_minmax, use_single = use_single, use_vertical = use_vertical, use_horizontal = use_horizontal, use_all = use_all, use_test = use_test, use_std = use_std, use_var = use_var, use_traj = use_traj)
-    for use_val in range(1, 2):
+    for use_val in range(0, 6):
         my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_outliers = use_outliers, use_minmax = use_minmax, use_single = use_single, use_vertical = use_vertical, use_horizontal = use_horizontal, use_all = use_all, use_test = use_test, use_val = use_val, use_std = use_std, use_var = use_var, use_traj = use_traj)
