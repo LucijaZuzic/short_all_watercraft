@@ -2,7 +2,8 @@ from utilities import load_object, save_object
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-
+MAXVALTOTAL = 10 ^ 200
+TOPOFPLOT = 10 ^ 100
 dicti_all = load_object("dicti_all")
 dicti_all_ws = load_object("dicti_all_ws")
 dicti_all_latest = dict()
@@ -18,6 +19,7 @@ metric_translate_traj = {"Euclid": "Euclidean distance", "R2": "$R^{2}$ (%)", "M
 metric_translate = {"NRMSE": "NRMSE (%)", "R2": "$R^{2} (%)$", "MAE": "MAE", "RMSE": "RMSE"}
 
 list_ws = [2, 3, 4, 5, 10, 20, 30] 
+list_ws_short = [2, 5, 10, 20, 30]
  
 sf1, sf2 = 5, 5
 for nf1 in range(sf1):
@@ -171,7 +173,7 @@ dicti_my_title = {0: "",
                   4: "$4^{th}$",
                   5: "$5^{th}$"}
 
-def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_test = 0, use_val = 0, use_std = True, use_var = True, use_traj = True):
+def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outliers = True, use_minmax = True, use_single = True, use_vertical = True, use_horizontal = True, use_all = True, use_test = 0, use_val = 0, use_std = True, use_var = True, use_traj = True):
 
     metrictouse_traj = ["Euclid", "MAE", "R2"]
     vartouse_traj = ["long speed actual dir", "long no abs"]
@@ -221,10 +223,10 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_test
                             set_values[val_ws] = set()
                         max_col = dict()
                         for val_ws in list_ws:
-                            max_col[val_ws] = (-1000000, 0)
+                            max_col[val_ws] = (-MAXVALTOTAL, 0)
                         min_col = dict()
                         for val_ws in list_ws:
-                            min_col[val_ws] = (1000000, 0)
+                            min_col[val_ws] = (MAXVALTOTAL, 0)
                         duplicate_val_all = False
                         duplicate_val = False
                         too_small = False
@@ -367,10 +369,10 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_test
                             set_values[val_ws] = set()
                         max_col = dict()
                         for val_ws in list_ws:
-                            max_col[val_ws] = (-1000000, 0)
+                            max_col[val_ws] = (-MAXVALTOTAL, 0)
                         min_col = dict()
                         for val_ws in list_ws:
-                            min_col[val_ws] = (1000000, 0)
+                            min_col[val_ws] = (MAXVALTOTAL, 0)
                         duplicate_val_all = False
                         duplicate_val = False
                         too_small = False
@@ -539,162 +541,126 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_test
             os.makedirs("latest_plot/" + str(use_test) + "/" + str(use_val) + "/")
 
         if use_var:
-            for varname in vartouse_var:
-                for metric_name_use in metric_dicti:
-                    plt.figure(figsize = (16, 9), dpi = 600)
-                    newvar = varname
-                    if varname in translate_varname_var:
-                        newvar = translate_varname_var[varname]
-                    if varname in translate_varname_traj:
-                        newvar = translate_varname_traj[varname]
-                    newmetric = metric_name_use
-                    if metric_name_use in metric_translate:
-                        newmetric = metric_translate[metric_name_use]
-                    if metric_name_use in metric_translate_traj:
-                        newmetric = metric_translate_traj[metric_name_use]
-                    title_use = newvar.capitalize()
-                    if use_val == 0:
-                        if use_test > 0:
-                            title_use += "\n" + dicti_my_title[use_test] + " testing dataset"
-                    else:
-                        title_use += "\n" + dicti_my_title[use_test] + " testing dataset " + dicti_my_title[use_val] + " validation dataset"
-                    plt.title(title_use)
-                    cix = 0
-                    six = 0
-                    for model_name_use in ord_metric:
-                        plt_dict = []
-                        for val_ws in list_ws:
-                            if use_val == 0:
-                                if use_test == 0:
-                                    plt_dict.append(dicti_all_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use])
+            if use_single:
+                lims_for_plt = dict()
+                for varname in vartouse_var:
+                    for metric_name_use in metric_dicti:
+                        lims_for_plt[varname + metric_name_use] = (MAXVALTOTAL, -MAXVALTOTAL)
+                        for model_name_use in ord_metric:
+                            for val_ws in list_ws:
+                                if use_val == 0:
+                                    if use_test == 0:
+                                        val_use = dicti_all_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use]
+                                    else:
+                                        val_use = dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][use_test - 1]
                                 else:
-                                    plt_dict.append(dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][use_test - 1])
-                            else:
-                                plt_dict.append(dicti_all_latest[use_test - 1][use_val - 1][varname][model_name_use][str(val_ws)][metric_name_use])
-                        plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
-                        cix += 1
-                        if cix == len(lnc):
-                            cix = 0
-                            six += 1
-                            if six == len(lns):
-                                six = 0
-                    plt.xticks(list_ws)
-                    plt.xlabel("Forecasting time")
-                    plt.ylabel(newmetric)
-                    plt.legend(ncol = 3, loc = "lower left", bbox_to_anchor = (0, -0.5))
-                    plt.savefig("latest_plot/" + str(use_test) + "/" + str(use_val) + "/" + varname + "_" + metric_name_use + "_" + str(use_test) + "_" + str(use_val) + ".png", bbox_inches = "tight")
-                    plt.close()
+                                    val_use = dicti_all_latest[use_test - 1][use_val - 1][varname][model_name_use][str(val_ws)][metric_name_use]
+                                if "R2" in metric_name_use:
+                                     val_use = val_use * 100.0
+                                if abs(val_use) < TOPOFPLOT and val_use < lims_for_plt[varname + metric_name_use][0]:
+                                    lims_for_plt[varname + metric_name_use] = (val_use, lims_for_plt[varname + metric_name_use][1])
+                                if abs(val_use) < TOPOFPLOT and val_use > lims_for_plt[varname + metric_name_use][1]:
+                                    lims_for_plt[varname + metric_name_use] = (lims_for_plt[varname + metric_name_use][0], val_use)  
+                for varname in vartouse_var:
+                    for metric_name_use in metric_dicti:
+                        plt.figure(figsize = (8, 6), dpi = 600)
+                        newvar = varname
+                        if varname in translate_varname_var:
+                            newvar = translate_varname_var[varname]
+                        if varname in translate_varname_traj:
+                            newvar = translate_varname_traj[varname]
+                        newmetric = metric_name_use
+                        if metric_name_use in metric_translate:
+                            newmetric = metric_translate[metric_name_use]
+                        if metric_name_use in metric_translate_traj:
+                            newmetric = metric_translate_traj[metric_name_use]
+                        title_use = newvar.capitalize() + " " + newmetric
+                        if use_val == 0:
+                            if use_test > 0:
+                                title_use += "\n" + dicti_my_title[use_test] + " testing dataset"
+                        else:
+                            title_use += "\n" + dicti_my_title[use_test] + " testing dataset " + dicti_my_title[use_val] + " validation dataset"
+                        plt.title(title_use)
+                        cix = 0
+                        six = 0
+                        for model_name_use in ord_metric:
+                            plt_dict = []
+                            for val_ws in list_ws:
+                                if use_val == 0:
+                                    if use_test == 0:
+                                        plt_dict.append(dicti_all_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use])
+                                    else:
+                                        plt_dict.append(dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][use_test - 1])
+                                else:
+                                    plt_dict.append(dicti_all_latest[use_test - 1][use_val - 1][varname][model_name_use][str(val_ws)][metric_name_use])
+                            if "R2" in metric_name_use:
+                                plt_dict = [x * 100.0 for x in plt_dict]
+                            plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                            cix += 1
+                            if cix == len(lnc):
+                                cix = 0
+                                six += 1
+                                if six == len(lns):
+                                    six = 0
+                        plt.xlim(min(list_ws), max(list_ws))
+                        plt.ylim(lims_for_plt[varname + metric_name_use][0], lims_for_plt[varname + metric_name_use][1])
+                        plt.xticks(list_ws)
+                        ytick_vals = []
+                        stepval = (lims_for_plt[varname + metric_name_use][0] + lims_for_plt[varname + metric_name_use][1]) / 10
+                        for ytick_val in np.arange(lims_for_plt[varname + metric_name_use][0], lims_for_plt[varname + metric_name_use][1] + stepval, stepval):
+                            ytick_vals.append(ytick_val)
+                        plt.yticks(ytick_vals)
+                        plt.xlabel("Forecasting time")
+                        plt.ylabel(newmetric)
+                        plt.legend(ncol = 4, loc = "lower left", bbox_to_anchor = (0, -0.35))
+                        plt.savefig("latest_plot/" + str(use_test) + "/" + str(use_val) + "/" + varname + "_" + metric_name_use + "_" + str(use_test) + "_" + str(use_val) + ".png", bbox_inches = "tight")
+                        plt.close()
 
             if use_test == 0 and use_val == 0:
-                for varname in vartouse_var:
-                    for metric_name_use in metric_dicti:
-                        plt.figure(figsize = (16, 9), dpi = 600)
-                        newvar = varname
-                        if varname in translate_varname_var:
-                            newvar = translate_varname_var[varname]
-                        if varname in translate_varname_traj:
-                            newvar = translate_varname_traj[varname]
-                        newmetric = metric_name_use
-                        if metric_name_use in metric_translate:
-                            newmetric = metric_translate[metric_name_use]
-                        if metric_name_use in metric_translate_traj:
-                            newmetric = metric_translate_traj[metric_name_use]
-                        for tn in range(5):
-                            cix = 0
-                            six = 0 
-                            plt.subplot(5, 1, tn + 1)
-                            if tn == 0:
-                                plt.title(newvar.capitalize() + " " + newmetric)
-                            for model_name_use in ord_metric:
-                                plt_dict = []
-                                for val_ws in list_ws:
-                                    plt_dict.append(dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn])
-                                if tn == 4:    
-                                    plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
-                                else:
-                                    plt.plot(list_ws, plt_dict, color = lnc[cix], linestyle = lns[six])
-                                cix += 1
-                                if cix == len(lnc):
-                                    cix = 0
-                                    six += 1
-                                    if six == len(lns):
-                                        six = 0
-                            if tn == 4:
-                                plt.xticks(list_ws)
-                                plt.xlabel("Forecasting time")
-                                plt.legend(ncol = 3, loc = "lower left", bbox_to_anchor = (0, -1))
-                            plt.ylabel("Test " + str(tn + 1))
-                        plt.savefig("latest_plot/" + varname + "_" + metric_name_use + "_test.png", bbox_inches = "tight")
-                        plt.close()
-                        
-                for varname in vartouse_var:
-                    for metric_name_use in metric_dicti:
-                        plt.figure(figsize = (16, 9), dpi = 600)
-                        newvar = varname
-                        if varname in translate_varname_var:
-                            newvar = translate_varname_var[varname]
-                        if varname in translate_varname_traj:
-                            newvar = translate_varname_traj[varname]
-                        newmetric = metric_name_use
-                        if metric_name_use in metric_translate:
-                            newmetric = metric_translate[metric_name_use]
-                        if metric_name_use in metric_translate_traj:
-                            newmetric = metric_translate_traj[metric_name_use]
-                        for tn in range(5):
-                            cix = 0
-                            six = 0 
-                            plt.subplot(1, 5, tn + 1)
-                            if tn == 2:
-                                plt.title(newvar.capitalize() + " " + newmetric)
-                            for model_name_use in ord_metric:
-                                plt_dict = []
-                                for val_ws in list_ws:
-                                    plt_dict.append(dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn])
-                                if tn == 0:    
-                                    plt.plot(plt_dict, list_ws, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
-                                else:
-                                    plt.plot(plt_dict, list_ws, color = lnc[cix], linestyle = lns[six])
-                                cix += 1
-                                if cix == len(lnc):
-                                    cix = 0
-                                    six += 1
-                                    if six == len(lns):
-                                        six = 0
-                            if tn == 0:
-                                plt.yticks(list_ws)
-                                plt.ylabel("Forecasting time")
-                                plt.legend(ncol = 3, loc = "lower left", bbox_to_anchor = (0, -0.5))
-                            else:
-                                plt.yticks([])
-                            plt.xlabel("Test " + str(tn + 1))
-                        plt.savefig("latest_plot/" + varname + "_" + metric_name_use + "_reverse_test.png", bbox_inches = "tight")
-                        plt.close()
-
-                for varname in vartouse_var:
-                    for metric_name_use in metric_dicti:
-                        plt.figure(figsize = (16, 9), dpi = 600)
-                        newvar = varname
-                        if varname in translate_varname_var:
-                            newvar = translate_varname_var[varname]
-                        if varname in translate_varname_traj:
-                            newvar = translate_varname_traj[varname]
-                        newmetric = metric_name_use
-                        if metric_name_use in metric_translate:
-                            newmetric = metric_translate[metric_name_use]
-                        if metric_name_use in metric_translate_traj:
-                            newmetric = metric_translate_traj[metric_name_use]
-                        for tn in range(5):
-                            for vn in range(5):
+                if use_horizontal:
+                    lims_for_plt = dict()
+                    for varname in vartouse_var:
+                        for metric_name_use in metric_dicti:
+                            for tn in range(5):
+                                lims_for_plt[varname + metric_name_use + str(tn)] = (MAXVALTOTAL, -MAXVALTOTAL)
+                                for model_name_use in ord_metric:
+                                    for val_ws in list_ws:
+                                        val_use = dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn]
+                                        if "R2" in metric_name_use:
+                                             val_use = val_use * 100.0
+                                        if abs(val_use) < TOPOFPLOT and val_use < lims_for_plt[varname + metric_name_use + str(tn)][0]:
+                                            lims_for_plt[varname + metric_name_use + str(tn)] = (val_use, lims_for_plt[varname + metric_name_use + str(tn)][1])
+                                        if abs(val_use) < TOPOFPLOT and val_use > lims_for_plt[varname + metric_name_use + str(tn)][1]:
+                                            lims_for_plt[varname + metric_name_use + str(tn)] = (lims_for_plt[varname + metric_name_use + str(tn)][0], val_use)  
+                    for varname in vartouse_var:
+                        for metric_name_use in metric_dicti:
+                            plt.figure(figsize = (8, 6), dpi = 600)
+                            newvar = varname
+                            if varname in translate_varname_var:
+                                newvar = translate_varname_var[varname]
+                            if varname in translate_varname_traj:
+                                newvar = translate_varname_traj[varname]
+                            newmetric = metric_name_use
+                            if metric_name_use in metric_translate:
+                                newmetric = metric_translate[metric_name_use]
+                            if metric_name_use in metric_translate_traj:
+                                newmetric = metric_translate_traj[metric_name_use]
+                            for tn in range(5):
                                 cix = 0
                                 six = 0 
-                                plt.subplot(5, 5, tn * 5 + vn + 1)
-                                if tn == 0 and vn == 2:
+                                plt.subplot(5, 1, tn + 1)
+                                plt.xlim(min(list_ws), max(list_ws))
+                                plt.yticks([lims_for_plt[varname + metric_name_use + str(tn)][0], (lims_for_plt[varname + metric_name_use + str(tn)][0] + lims_for_plt[varname + metric_name_use + str(tn)][1]) / 2, lims_for_plt[varname + metric_name_use + str(tn)][1]])
+                                plt.ylim(lims_for_plt[varname + metric_name_use + str(tn)][0], lims_for_plt[varname + metric_name_use + str(tn)][1])
+                                if tn == 0:
                                     plt.title(newvar.capitalize() + " " + newmetric)
                                 for model_name_use in ord_metric:
                                     plt_dict = []
                                     for val_ws in list_ws:
                                         plt_dict.append(dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn])
-                                    if tn == 4 and vn == 0:    
+                                    if "R2" in metric_name_use:
+                                        plt_dict = [x * 100.0 for x in plt_dict]
+                                    if tn == 4:    
                                         plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
                                     else:
                                         plt.plot(list_ws, plt_dict, color = lnc[cix], linestyle = lns[six])
@@ -706,175 +672,266 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_test
                                             six = 0
                                 if tn == 4:
                                     plt.xticks(list_ws)
-                                    plt.xlabel("Validation " + str(vn + 1))
+                                    plt.xlabel("Forecasting time")
+                                    plt.legend(ncol = 4, loc = "lower left", bbox_to_anchor = (0, -2))
                                 else:
                                     plt.xticks([])
-                                if tn == 4 and vn == 0:
-                                    plt.legend(ncol = 3, loc = "lower left", bbox_to_anchor = (0, -1))
-                                if vn == 0:
-                                    plt.ylabel("Test " + str(tn + 1))
-                                else:
-                                    plt.yticks([])
-                        plt.savefig("latest_plot/" + varname + "_" + metric_name_use + "_all.png", bbox_inches = "tight")
-                        plt.close()
-
-        if use_traj:
-            for varname in vartouse_traj:
-                for metric_name_use in metric_dicti_traj:
-                    plt.figure(figsize = (16, 9), dpi = 600)
-                    newvar = varname
-                    if varname in translate_varname_var:
-                        newvar = translate_varname_var[varname]
-                    if varname in translate_varname_traj:
-                        newvar = translate_varname_traj[varname]
-                    newmetric = metric_name_use
-                    if metric_name_use in metric_translate:
-                        newmetric = metric_translate[metric_name_use]
-                    if metric_name_use in metric_translate_traj:
-                        newmetric = metric_translate_traj[metric_name_use]
-                    title_use = newvar.capitalize()
-                    if use_val == 0:
-                        if use_test > 0:
-                            title_use += "\n" + dicti_my_title[use_test] + " testing dataset"
-                    else:
-                        title_use += "\n" + dicti_my_title[use_test] + " testing dataset " + dicti_my_title[use_val] + " validation dataset"
-                    plt.title(title_use)
-                    cix = 0
-                    six = 0
-                    for model_name_use in ord_metric_traj:
-                        plt_dict = []
-                        for val_ws in list_ws:
-                            if use_val == 0:
-                                if use_test == 0:
-                                    plt_dict.append(dicti_all_traj_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use])
-                                else:
-                                    plt_dict.append(dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][use_test - 1])
-                            else:
-                                plt_dict.append(dicti_all_traj_latest[use_test - 1][use_val - 1][varname][model_name_use][str(val_ws)][metric_name_use])
-                        plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
-                        cix += 1
-                        if cix == len(lnc):
-                            cix = 0
-                            six += 1
-                            if six == len(lns):
-                                six = 0
-                    plt.xticks(list_ws)
-                    plt.xlabel("Forecasting time")
-                    plt.ylabel(newmetric)
-                    plt.legend(ncol = 3, loc = "lower left", bbox_to_anchor = (0, -0.5))
-                    plt.savefig("latest_plot/" + str(use_test) + "/" + str(use_val) + "/" + varname + "_" + metric_name_use + "_" + str(use_test) + "_" + str(use_val) + ".png", bbox_inches = "tight")
-                    plt.close()
-
-            if use_test == 0 and use_val == 0:
-                for varname in vartouse_traj:
-                    for metric_name_use in metric_dicti_traj:
-                        plt.figure(figsize = (16, 9), dpi = 600)
-                        newvar = varname
-                        if varname in translate_varname_var:
-                            newvar = translate_varname_var[varname]
-                        if varname in translate_varname_traj:
-                            newvar = translate_varname_traj[varname]
-                        newmetric = metric_name_use
-                        if metric_name_use in metric_translate:
-                            newmetric = metric_translate[metric_name_use]
-                        if metric_name_use in metric_translate_traj:
-                            newmetric = metric_translate_traj[metric_name_use]
-                        for tn in range(5):
-                            cix = 0
-                            six = 0 
-                            plt.subplot(5, 1, tn + 1)
-                            if tn == 0:
-                                plt.title(newvar.capitalize() + " " + newmetric)
-                            for model_name_use in ord_metric_traj:
-                                plt_dict = []
-                                for val_ws in list_ws:
-                                    plt_dict.append(dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn])
-                                if tn == 4:    
-                                    plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
-                                else:
-                                    plt.plot(list_ws, plt_dict, color = lnc[cix], linestyle = lns[six])
-                                cix += 1
-                                if cix == len(lnc):
-                                    cix = 0
-                                    six += 1
-                                    if six == len(lns):
-                                        six = 0
-                            if tn == 4:
-                                plt.xticks(list_ws)
-                                plt.xlabel("Forecasting time")
-                                plt.legend(ncol = 3, loc = "lower left", bbox_to_anchor = (0, -1))
-                            plt.ylabel("Test " + str(tn + 1))
-                        plt.savefig("latest_plot/" + varname + "_" + metric_name_use + "_test.png", bbox_inches = "tight")
-                        plt.close()
-                        
-                for varname in vartouse_traj:
-                    for metric_name_use in metric_dicti_traj:
-                        plt.figure(figsize = (16, 9), dpi = 600)
-                        newvar = varname
-                        if varname in translate_varname_var:
-                            newvar = translate_varname_var[varname]
-                        if varname in translate_varname_traj:
-                            newvar = translate_varname_traj[varname]
-                        newmetric = metric_name_use
-                        if metric_name_use in metric_translate:
-                            newmetric = metric_translate[metric_name_use]
-                        if metric_name_use in metric_translate_traj:
-                            newmetric = metric_translate_traj[metric_name_use]
-                        for tn in range(5):
-                            cix = 0
-                            six = 0 
-                            plt.subplot(1, 5, tn + 1)
-                            if tn == 2:
-                                plt.title(newvar.capitalize() + " " + newmetric)
-                            for model_name_use in ord_metric_traj:
-                                plt_dict = []
-                                for val_ws in list_ws:
-                                    plt_dict.append(dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn])
-                                if tn == 0:    
-                                    plt.plot(plt_dict, list_ws, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
-                                else:
-                                    plt.plot(plt_dict, list_ws, color = lnc[cix], linestyle = lns[six])
-                                cix += 1
-                                if cix == len(lnc):
-                                    cix = 0
-                                    six += 1
-                                    if six == len(lns):
-                                        six = 0
-                            if tn == 0:
-                                plt.yticks(list_ws)
-                                plt.ylabel("Forecasting time")
-                                plt.legend(ncol = 3, loc = "lower left", bbox_to_anchor = (0, -0.5))
-                            else:
-                                plt.yticks([])
-                            plt.xlabel("Test " + str(tn + 1))
-                        plt.savefig("latest_plot/" + varname + "_" + metric_name_use + "_reverse_test.png", bbox_inches = "tight")
-                        plt.close()
-
-                for varname in vartouse_traj:
-                    for metric_name_use in metric_dicti_traj:
-                        plt.figure(figsize = (16, 9), dpi = 600)
-                        newvar = varname
-                        if varname in translate_varname_var:
-                            newvar = translate_varname_var[varname]
-                        if varname in translate_varname_traj:
-                            newvar = translate_varname_traj[varname]
-                        newmetric = metric_name_use
-                        if metric_name_use in metric_translate:
-                            newmetric = metric_translate[metric_name_use]
-                        if metric_name_use in metric_translate_traj:
-                            newmetric = metric_translate_traj[metric_name_use]
-                        for tn in range(5):
-                            for vn in range(5):
+                                plt.ylabel("Test " + str(tn + 1) + "\n" + newmetric.replace(" distance", "\ndistance").replace(" (time)", "\n(time)"))
+                            plt.savefig("latest_plot/" + varname + "_" + metric_name_use + "_test.png", bbox_inches = "tight")
+                            plt.close()
+                if use_vertical: 
+                    lims_for_plt = dict()
+                    for varname in vartouse_var:
+                        for metric_name_use in metric_dicti:
+                            for tn in range(5):
+                                lims_for_plt[varname + metric_name_use + str(tn)] = (MAXVALTOTAL, -MAXVALTOTAL)
+                                for model_name_use in ord_metric:
+                                    for val_ws in list_ws:
+                                        val_use = dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn]
+                                        if "R2" in metric_name_use:
+                                             val_use = val_use * 100.0
+                                        if abs(val_use) < TOPOFPLOT and val_use < lims_for_plt[varname + metric_name_use + str(tn)][0]:
+                                            lims_for_plt[varname + metric_name_use + str(tn)] = (val_use, lims_for_plt[varname + metric_name_use + str(tn)][1])
+                                        if abs(val_use) < TOPOFPLOT and val_use > lims_for_plt[varname + metric_name_use + str(tn)][1]:
+                                            lims_for_plt[varname + metric_name_use + str(tn)] = (lims_for_plt[varname + metric_name_use + str(tn)][0], val_use)       
+                    for varname in vartouse_var:
+                        for metric_name_use in metric_dicti:
+                            plt.figure(figsize = (8, 6), dpi = 600)
+                            newvar = varname
+                            if varname in translate_varname_var:
+                                newvar = translate_varname_var[varname]
+                            if varname in translate_varname_traj:
+                                newvar = translate_varname_traj[varname]
+                            newmetric = metric_name_use
+                            if metric_name_use in metric_translate:
+                                newmetric = metric_translate[metric_name_use]
+                            if metric_name_use in metric_translate_traj:
+                                newmetric = metric_translate_traj[metric_name_use]
+                            for tn in range(5):
                                 cix = 0
                                 six = 0 
-                                plt.subplot(5, 5, tn * 5 + vn + 1)
-                                if tn == 0 and vn == 2:
+                                plt.subplot(1, 5, tn + 1)
+                                plt.ylim(min(list_ws), max(list_ws))
+                                plt.xticks([lims_for_plt[varname + metric_name_use + str(tn)][0], (lims_for_plt[varname + metric_name_use + str(tn)][0] + lims_for_plt[varname + metric_name_use + str(tn)][1]) * 0.6])
+                                plt.xlim(lims_for_plt[varname + metric_name_use + str(tn)][0], lims_for_plt[varname + metric_name_use + str(tn)][1])
+                                if tn == 2:
+                                    plt.title(newvar.capitalize() + " " + newmetric)
+                                for model_name_use in ord_metric:
+                                    plt_dict = []
+                                    for val_ws in list_ws:
+                                        plt_dict.append(dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn])
+                                    if "R2" in metric_name_use:
+                                        plt_dict = [x * 100.0 for x in plt_dict]
+                                    if tn == 0:    
+                                        plt.plot(plt_dict, list_ws, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                                    else:
+                                        plt.plot(plt_dict, list_ws, color = lnc[cix], linestyle = lns[six])
+                                    cix += 1
+                                    if cix == len(lnc):
+                                        cix = 0
+                                        six += 1
+                                        if six == len(lns):
+                                            six = 0
+                                if tn == 0:
+                                    plt.yticks(list_ws)
+                                    plt.ylabel("Forecasting time")
+                                    plt.legend(ncol = 4, loc = "lower left", bbox_to_anchor = (0, -0.45))
+                                else:
+                                    plt.yticks([])
+                                plt.xlabel(newmetric.replace(" distance", "\ndistance").replace(" (time)", "\n(time)") + "\nTest " + str(tn + 1))
+                            plt.savefig("latest_plot/" + varname + "_" + metric_name_use + "_reverse_test.png", bbox_inches = "tight")
+                            plt.close()
+                if use_all:
+                    lims_for_plt = dict()
+                    for varname in vartouse_var:
+                        for metric_name_use in metric_dicti:
+                            for tn in range(5):
+                                lims_for_plt[varname + metric_name_use + str(tn)] = dict()
+                                for vn in range(5):
+                                    lims_for_plt[varname + metric_name_use + str(tn)][vn] = (MAXVALTOTAL, -MAXVALTOTAL)
+                                    for model_name_use in ord_metric:
+                                        for val_ws in list_ws:
+                                            val_use = dicti_all_latest[tn][vn][varname][model_name_use][str(val_ws)][metric_name_use]
+                                            if "R2" in metric_name_use:
+                                                 val_use = val_use * 100.0
+                                            if abs(val_use) < TOPOFPLOT and val_use < lims_for_plt[varname + metric_name_use + str(tn)][vn][0]:
+                                                lims_for_plt[varname + metric_name_use + str(tn)][vn] = (val_use, lims_for_plt[varname + metric_name_use + str(tn)][vn][1])
+                                            if abs(val_use) < TOPOFPLOT and val_use > lims_for_plt[varname + metric_name_use + str(tn)][vn][1]:
+                                                lims_for_plt[varname + metric_name_use + str(tn)][vn] = (lims_for_plt[varname + metric_name_use + str(tn)][vn][0], val_use)
+                    for varname in vartouse_var:
+                        for metric_name_use in metric_dicti:
+                            plt.figure(figsize = (8, 6), dpi = 600)
+                            newvar = varname
+                            if varname in translate_varname_var:
+                                newvar = translate_varname_var[varname]
+                            if varname in translate_varname_traj:
+                                newvar = translate_varname_traj[varname]
+                            newmetric = metric_name_use
+                            if metric_name_use in metric_translate:
+                                newmetric = metric_translate[metric_name_use]
+                            if metric_name_use in metric_translate_traj:
+                                newmetric = metric_translate_traj[metric_name_use]
+                            for tn in range(5):
+                                for vn in range(5):
+                                    cix = 0
+                                    six = 0 
+                                    plt.subplot(5, 5, tn * 5 + vn + 1)
+                                    plt.xlim(min(list_ws), max(list_ws))
+                                    plt.ylim(lims_for_plt[varname + metric_name_use + str(tn)][vn][0], lims_for_plt[varname + metric_name_use + str(tn)][vn][1])
+                                    if tn == 0 and vn == 2:
+                                        plt.title(newvar.capitalize() + " " + newmetric)
+                                    for model_name_use in ord_metric:
+                                        plt_dict = []
+                                        for val_ws in list_ws:
+                                            plt_dict.append(dicti_all_latest[tn][vn][varname][model_name_use][str(val_ws)][metric_name_use])
+                                        if "R2" in metric_name_use:
+                                            plt_dict = [x * 100.0 for x in plt_dict]
+                                        if tn == 4 and vn == 0:    
+                                            plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                                        else:
+                                            plt.plot(list_ws, plt_dict, color = lnc[cix], linestyle = lns[six])
+                                        cix += 1
+                                        if cix == len(lnc):
+                                            cix = 0
+                                            six += 1
+                                            if six == len(lns):
+                                                six = 0
+                                    if tn == 4:
+                                        plt.xticks(list_ws_short)
+                                        plt.xlabel("Forecasting time\nValidation " + str(vn + 1))
+                                    else:
+                                        plt.xticks([])
+                                    if tn == 4 and vn == 0:
+                                        plt.legend(ncol = 4, loc = "lower left", bbox_to_anchor = (0, -2.25))
+                                    if vn == 0:
+                                        plt.ylabel("Test " + str(tn + 1) + "\n" + newmetric.replace(" distance", "\ndistance").replace(" (time)", "\n(time)"))
+                                        plt.yticks([lims_for_plt[varname + metric_name_use + str(tn)][vn][0], (lims_for_plt[varname + metric_name_use + str(tn)][vn][0] + lims_for_plt[varname + metric_name_use + str(tn)][vn][1]) / 2, lims_for_plt[varname + metric_name_use + str(tn)][vn][1]])
+                                    else:
+                                        plt.yticks([])
+                            plt.savefig("latest_plot/" + varname + "_" + metric_name_use + "_all.png", bbox_inches = "tight")
+                            plt.close()
+
+        if use_traj:
+            if use_single:
+                lims_for_plt = dict()
+                for varname in vartouse_traj:
+                    for metric_name_use in metric_dicti_traj:
+                        lims_for_plt[varname + metric_name_use] = (MAXVALTOTAL, -MAXVALTOTAL)
+                        for model_name_use in ord_metric_traj:
+                            for val_ws in list_ws:
+                                if use_val == 0:
+                                    if use_test == 0:
+                                        val_use = dicti_all_traj_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use]
+                                    else:
+                                        val_use = dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][use_test - 1]
+                                else:
+                                    val_use = dicti_all_traj_latest[use_test - 1][use_val - 1][varname][model_name_use][str(val_ws)][metric_name_use]
+                                if "R2" in metric_name_use:
+                                     val_use = val_use * 100.0
+                                if abs(val_use) < TOPOFPLOT and val_use < lims_for_plt[varname + metric_name_use][0]:
+                                    lims_for_plt[varname + metric_name_use] = (val_use, lims_for_plt[varname + metric_name_use][1])
+                                if abs(val_use) < TOPOFPLOT and val_use > lims_for_plt[varname + metric_name_use][1]:
+                                    lims_for_plt[varname + metric_name_use] = (lims_for_plt[varname + metric_name_use][0], val_use)  
+                for varname in vartouse_traj:
+                    for metric_name_use in metric_dicti_traj:
+                        plt.figure(figsize = (8, 6), dpi = 600)
+                        newvar = varname
+                        if varname in translate_varname_var:
+                            newvar = translate_varname_var[varname]
+                        if varname in translate_varname_traj:
+                            newvar = translate_varname_traj[varname]
+                        newmetric = metric_name_use
+                        if metric_name_use in metric_translate:
+                            newmetric = metric_translate[metric_name_use]
+                        if metric_name_use in metric_translate_traj:
+                            newmetric = metric_translate_traj[metric_name_use]
+                        title_use = newvar.capitalize() + " " + newmetric
+                        if use_val == 0:
+                            if use_test > 0:
+                                title_use += "\n" + dicti_my_title[use_test] + " testing dataset"
+                        else:
+                            title_use += "\n" + dicti_my_title[use_test] + " testing dataset " + dicti_my_title[use_val] + " validation dataset"
+                        plt.title(title_use)
+                        cix = 0
+                        six = 0
+                        for model_name_use in ord_metric_traj:
+                            plt_dict = []
+                            for val_ws in list_ws:
+                                if use_val == 0:
+                                    if use_test == 0:
+                                        plt_dict.append(dicti_all_traj_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use])
+                                    else:
+                                        plt_dict.append(dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][use_test - 1])
+                                else:
+                                    plt_dict.append(dicti_all_traj_latest[use_test - 1][use_val - 1][varname][model_name_use][str(val_ws)][metric_name_use])
+                            if "R2" in metric_name_use:
+                                plt_dict = [x * 100.0 for x in plt_dict]
+                            plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                            cix += 1
+                            if cix == len(lnc):
+                                cix = 0
+                                six += 1
+                                if six == len(lns):
+                                    six = 0
+                        plt.xlim(min(list_ws), max(list_ws))
+                        plt.ylim(lims_for_plt[varname + metric_name_use][0], lims_for_plt[varname + metric_name_use][1])
+                        plt.xticks(list_ws)
+                        ytick_vals = []
+                        stepval = (lims_for_plt[varname + metric_name_use][0] + lims_for_plt[varname + metric_name_use][1]) / 10
+                        for ytick_val in np.arange(lims_for_plt[varname + metric_name_use][0], lims_for_plt[varname + metric_name_use][1] + stepval, stepval):
+                            ytick_vals.append(ytick_val)
+                        plt.yticks(ytick_vals)
+                        plt.xlabel("Forecasting time")
+                        plt.ylabel(newmetric)
+                        plt.legend(ncol = 4, loc = "lower left", bbox_to_anchor = (0, -0.35))
+                        plt.savefig("latest_plot/" + str(use_test) + "/" + str(use_val) + "/" + varname + "_" + metric_name_use + "_" + str(use_test) + "_" + str(use_val) + ".png", bbox_inches = "tight")
+                        plt.close()
+
+            if use_test == 0 and use_val == 0:
+                if use_horizontal:
+                    lims_for_plt = dict()
+                    for varname in vartouse_traj:
+                        for metric_name_use in metric_dicti_traj:
+                            for tn in range(5):
+                                lims_for_plt[varname + metric_name_use + str(tn)] = (MAXVALTOTAL, -MAXVALTOTAL)
+                                for model_name_use in ord_metric_traj:
+                                    for val_ws in list_ws:
+                                        val_use = dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn]
+                                        if "R2" in metric_name_use:
+                                             val_use = val_use * 100.0
+                                        if abs(val_use) < TOPOFPLOT and val_use < lims_for_plt[varname + metric_name_use + str(tn)][0]:
+                                            lims_for_plt[varname + metric_name_use + str(tn)] = (val_use, lims_for_plt[varname + metric_name_use + str(tn)][1])
+                                        if abs(val_use) < TOPOFPLOT and val_use > lims_for_plt[varname + metric_name_use + str(tn)][1]:
+                                            lims_for_plt[varname + metric_name_use + str(tn)] = (lims_for_plt[varname + metric_name_use + str(tn)][0], val_use)
+                    for varname in vartouse_traj:
+                        for metric_name_use in metric_dicti_traj:
+                            plt.figure(figsize = (8, 6), dpi = 600)
+                            newvar = varname
+                            if varname in translate_varname_var:
+                                newvar = translate_varname_var[varname]
+                            if varname in translate_varname_traj:
+                                newvar = translate_varname_traj[varname]
+                            newmetric = metric_name_use
+                            if metric_name_use in metric_translate:
+                                newmetric = metric_translate[metric_name_use]
+                            if metric_name_use in metric_translate_traj:
+                                newmetric = metric_translate_traj[metric_name_use]
+                            for tn in range(5):
+                                cix = 0
+                                six = 0 
+                                plt.subplot(5, 1, tn + 1)
+                                plt.xlim(min(list_ws), max(list_ws))
+                                plt.yticks([lims_for_plt[varname + metric_name_use + str(tn)][0], (lims_for_plt[varname + metric_name_use + str(tn)][0] + lims_for_plt[varname + metric_name_use + str(tn)][1]) / 2, lims_for_plt[varname + metric_name_use + str(tn)][1]])
+                                plt.ylim(lims_for_plt[varname + metric_name_use + str(tn)][0], lims_for_plt[varname + metric_name_use + str(tn)][1])
+                                if tn == 0:
                                     plt.title(newvar.capitalize() + " " + newmetric)
                                 for model_name_use in ord_metric_traj:
                                     plt_dict = []
                                     for val_ws in list_ws:
                                         plt_dict.append(dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn])
-                                    if tn == 4 and vn == 0:    
+                                    if "R2" in metric_name_use:
+                                        plt_dict = [x * 100.0 for x in plt_dict]
+                                    if tn == 4:    
                                         plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
                                     else:
                                         plt.plot(list_ws, plt_dict, color = lnc[cix], linestyle = lns[six])
@@ -886,17 +943,144 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_test
                                             six = 0
                                 if tn == 4:
                                     plt.xticks(list_ws)
-                                    plt.xlabel("Validation " + str(vn + 1))
+                                    plt.xlabel("Forecasting time")
+                                    plt.legend(ncol = 4, loc = "lower left", bbox_to_anchor = (0, -2))
                                 else:
                                     plt.xticks([])
-                                if tn == 4 and vn == 0:
-                                    plt.legend(ncol = 3, loc = "lower left", bbox_to_anchor = (0, -1))
-                                if vn == 0:
-                                    plt.ylabel("Test " + str(tn + 1))
+                                plt.ylabel("Test " + str(tn + 1) + "\n" + newmetric.replace(" distance", "\ndistance").replace(" (time)", "\n(time)"))
+                            plt.savefig("latest_plot/" + varname + "_" + metric_name_use + "_test.png", bbox_inches = "tight")
+                            plt.close()
+                if use_vertical:      
+                    lims_for_plt = dict()
+                    for varname in vartouse_traj:
+                        for metric_name_use in metric_dicti_traj:
+                            for tn in range(5):
+                                lims_for_plt[varname + metric_name_use + str(tn)] = (MAXVALTOTAL, -MAXVALTOTAL)
+                                for model_name_use in ord_metric_traj:
+                                    for val_ws in list_ws:
+                                        val_use = dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn]
+                                        if "R2" in metric_name_use:
+                                             val_use = val_use * 100.0
+                                        if abs(val_use) < TOPOFPLOT and val_use < lims_for_plt[varname + metric_name_use + str(tn)][0]:
+                                            lims_for_plt[varname + metric_name_use + str(tn)] = (val_use, lims_for_plt[varname + metric_name_use + str(tn)][1])
+                                        if abs(val_use) < TOPOFPLOT and val_use > lims_for_plt[varname + metric_name_use + str(tn)][1]:
+                                            lims_for_plt[varname + metric_name_use + str(tn)] = (lims_for_plt[varname + metric_name_use + str(tn)][0], val_use)  
+                    for varname in vartouse_traj:
+                        for metric_name_use in metric_dicti_traj:
+                            plt.figure(figsize = (8, 6), dpi = 600)
+                            newvar = varname
+                            if varname in translate_varname_var:
+                                newvar = translate_varname_var[varname]
+                            if varname in translate_varname_traj:
+                                newvar = translate_varname_traj[varname]
+                            newmetric = metric_name_use
+                            if metric_name_use in metric_translate:
+                                newmetric = metric_translate[metric_name_use]
+                            if metric_name_use in metric_translate_traj:
+                                newmetric = metric_translate_traj[metric_name_use]
+                            for tn in range(5):
+                                cix = 0
+                                six = 0 
+                                plt.subplot(1, 5, tn + 1)
+                                plt.ylim(min(list_ws), max(list_ws))
+                                plt.xticks([lims_for_plt[varname + metric_name_use + str(tn)][0], (lims_for_plt[varname + metric_name_use + str(tn)][0] + lims_for_plt[varname + metric_name_use + str(tn)][1]) * 0.6])
+                                plt.xlim(lims_for_plt[varname + metric_name_use + str(tn)][0], lims_for_plt[varname + metric_name_use + str(tn)][1])
+                                if tn == 2:
+                                    plt.title(newvar.capitalize() + " " + newmetric)
+                                for model_name_use in ord_metric_traj:
+                                    plt_dict = []
+                                    for val_ws in list_ws:
+                                        plt_dict.append(dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn])
+                                    if "R2" in metric_name_use:
+                                        plt_dict = [x * 100.0 for x in plt_dict]
+                                    if tn == 0:    
+                                        plt.plot(plt_dict, list_ws, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                                    else:
+                                        plt.plot(plt_dict, list_ws, color = lnc[cix], linestyle = lns[six])
+                                    cix += 1
+                                    if cix == len(lnc):
+                                        cix = 0
+                                        six += 1
+                                        if six == len(lns):
+                                            six = 0
+                                if tn == 0:
+                                    plt.yticks(list_ws)
+                                    plt.ylabel("Forecasting time")
+                                    plt.legend(ncol = 4, loc = "lower left", bbox_to_anchor = (0, -0.45))
                                 else:
                                     plt.yticks([])
-                        plt.savefig("latest_plot/" + varname + "_" + metric_name_use + "_all.png", bbox_inches = "tight")
-                        plt.close()
+                                plt.xlabel(newmetric.replace(" distance", "\ndistance").replace(" (time)", "\n(time)") + "\nTest " + str(tn + 1))
+                            plt.savefig("latest_plot/" + varname + "_" + metric_name_use + "_reverse_test.png", bbox_inches = "tight")
+                            plt.close()
+                if use_all:
+                    lims_for_plt = dict()
+                    for varname in vartouse_traj:
+                        for metric_name_use in metric_dicti_traj:
+                            for tn in range(5):
+                                lims_for_plt[varname + metric_name_use + str(tn)] = dict()
+                                for vn in range(5):
+                                    lims_for_plt[varname + metric_name_use + str(tn)][vn] = (MAXVALTOTAL, -MAXVALTOTAL)
+                                    for model_name_use in ord_metric_traj:
+                                        for val_ws in list_ws:
+                                            val_use = dicti_all_traj_latest[tn][vn][varname][model_name_use][str(val_ws)][metric_name_use]
+                                            if "R2" in metric_name_use:
+                                                 val_use = val_use * 100.0
+                                            if abs(val_use) < TOPOFPLOT and val_use < lims_for_plt[varname + metric_name_use + str(tn)][vn][0]:
+                                                lims_for_plt[varname + metric_name_use + str(tn)][vn] = (val_use, lims_for_plt[varname + metric_name_use + str(tn)][vn][1])
+                                            if abs(val_use) < TOPOFPLOT and val_use > lims_for_plt[varname + metric_name_use + str(tn)][vn][1]:
+                                                lims_for_plt[varname + metric_name_use + str(tn)][vn] = (lims_for_plt[varname + metric_name_use + str(tn)][vn][0], val_use)
+                    for varname in vartouse_traj:
+                        for metric_name_use in metric_dicti_traj:
+                            plt.figure(figsize = (8, 6), dpi = 600)
+                            newvar = varname
+                            if varname in translate_varname_var:
+                                newvar = translate_varname_var[varname]
+                            if varname in translate_varname_traj:
+                                newvar = translate_varname_traj[varname]
+                            newmetric = metric_name_use
+                            if metric_name_use in metric_translate:
+                                newmetric = metric_translate[metric_name_use]
+                            if metric_name_use in metric_translate_traj:
+                                newmetric = metric_translate_traj[metric_name_use]
+                            for tn in range(5):
+                                for vn in range(5):
+                                    cix = 0
+                                    six = 0 
+                                    plt.subplot(5, 5, tn * 5 + vn + 1)
+                                    plt.xlim(min(list_ws), max(list_ws))
+                                    plt.ylim(lims_for_plt[varname + metric_name_use + str(tn)][vn][0], lims_for_plt[varname + metric_name_use + str(tn)][vn][1])
+                                    if tn == 0 and vn == 2:
+                                        plt.title(newvar.capitalize() + " " + newmetric)
+                                    for model_name_use in ord_metric_traj:
+                                        plt_dict = []
+                                        for val_ws in list_ws:
+                                            plt_dict.append(dicti_all_traj_latest[tn][vn][varname][model_name_use][str(val_ws)][metric_name_use])
+                                        if "R2" in metric_name_use:
+                                            plt_dict = [x * 100.0 for x in plt_dict]
+                                        if tn == 4 and vn == 0:    
+                                            plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                                        else:
+                                            plt.plot(list_ws, plt_dict, color = lnc[cix], linestyle = lns[six])
+                                        cix += 1
+                                        if cix == len(lnc):
+                                            cix = 0
+                                            six += 1
+                                            if six == len(lns):
+                                                six = 0
+                                    if tn == 4:
+                                        plt.xticks(list_ws_short)
+                                        plt.xlabel("Forecasting time\nValidation " + str(vn + 1))
+                                    else:
+                                        plt.xticks([])
+                                    if tn == 4 and vn == 0:
+                                        plt.legend(ncol = 4, loc = "lower left", bbox_to_anchor = (0, -2.25))
+                                    if vn == 0:
+                                        plt.ylabel("Test " + str(tn + 1) + "\n" + newmetric.replace(" distance", "\ndistance").replace(" (time)", "\n(time)"))
+                                        plt.yticks([lims_for_plt[varname + metric_name_use + str(tn)][vn][0], (lims_for_plt[varname + metric_name_use + str(tn)][vn][0] + lims_for_plt[varname + metric_name_use + str(tn)][vn][1]) / 2, lims_for_plt[varname + metric_name_use + str(tn)][vn][1]])
+                                    else:
+                                        plt.yticks([])
+                            plt.savefig("latest_plot/" + varname + "_" + metric_name_use + "_all.png", bbox_inches = "tight")
+                            plt.close()
 
     if use_sizes:
         print(use_test, use_val)
@@ -919,9 +1103,9 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_test
                 for metric_name_use in metric_dicti:
                     for val_ws in list_ws:
                         min_model = ""
-                        min_val = 1000000
+                        min_val = MAXVALTOTAL
                         max_model = ""
-                        max_val = -1000000
+                        max_val = -MAXVALTOTAL
                         for model_name_use in ord_metric:
                             if use_val == 0:
                                 if use_test == 0:
@@ -972,9 +1156,9 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_test
                 for metric_name_use in metric_dicti_traj:
                     for val_ws in list_ws:
                         min_model = ""
-                        min_val = 1000000
+                        min_val = MAXVALTOTAL
                         max_model = ""
-                        max_val = -1000000
+                        max_val = -MAXVALTOTAL
                         for model_name_use in ord_metric_traj:
                             if use_val == 0:
                                 if use_test == 0:
@@ -1028,17 +1212,380 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_test
             print(model_name_use, len(best_dict_total[model_name_use]), len(best_dict_total[model_name_use]) / ((len(vartouse_var) + len(vartouse_traj)) * (len(metric_dicti) + len(metric_dicti_traj)) * len(list_ws)) * 100)
             break
 
-use_table = True
+    if use_outliers:
+        if use_test == 0 and use_val == 0:
+            limit_set = 0.5
+            flag_reverse = False
+            skip_names = ["LSTM_"]
+            skip_models = set()
+            for model_name_use in ord_metric:
+                found_part = False
+                for part in skip_names:
+                    if part in model_name_use:
+                        found_part = True
+                        break
+                if found_part:
+                    skip_models.add(model_name_use)
+            print(skip_models)
+            for model_name_use in ord_metric_traj:
+                found_part = False
+                for part in skip_names:
+                    if part in model_name_use:
+                        found_part = True
+                        break
+                if found_part:
+                    skip_models.add(model_name_use)
+            if use_var:
+                for varname in vartouse_var:
+                    for metric_name_use in metric_dicti:
+                        plt_dict = dict()
+                        min_for_model = dict()
+                        max_for_model = dict()
+                        range_for_model = dict()
+                        for model_name_use in ord_metric:
+                            if model_name_use in skip_models:
+                                continue
+                            plt_dict[model_name_use] = []
+                            for val_ws in list_ws:
+                                plt_dict[model_name_use].append(dicti_all_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use])
+                        for model_name_use in plt_dict:
+                            min_for_model[model_name_use] = min(plt_dict[model_name_use])
+                            max_for_model[model_name_use] = max(plt_dict[model_name_use])
+                            range_for_model[model_name_use] = max_for_model[model_name_use] - min_for_model[model_name_use]
+                        total_min = min(min_for_model.values())
+                        total_max = max(max_for_model.values())
+                        total_range = total_max - total_min
+                        min_range = min(range_for_model.values())
+                        max_range = max(range_for_model.values())
+                        if (flag_reverse and (min_range / total_range < limit_set or min_range / max_range < limit_set)) or (not flag_reverse and not (min_range / total_range < limit_set or min_range / max_range < limit_set)):
+                            print(varname, metric_name_use, min_range / total_range * 100, max_range / total_range * 100, min_range / max_range * 100)
+                for varname in vartouse_var:
+                    for metric_name_use in metric_dicti:
+                        for tn in range(5):
+                            plt_dict = dict()
+                            min_for_model = dict()
+                            max_for_model = dict()
+                            range_for_model = dict()
+                            for model_name_use in ord_metric:
+                                if model_name_use in skip_models:
+                                    continue
+                                plt_dict[model_name_use] = []
+                                for val_ws in list_ws:
+                                    plt_dict[model_name_use].append(dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn])
+                            for model_name_use in plt_dict:
+                                min_for_model[model_name_use] = min(plt_dict[model_name_use])
+                                max_for_model[model_name_use] = max(plt_dict[model_name_use])
+                                range_for_model[model_name_use] = max_for_model[model_name_use] - min_for_model[model_name_use]
+                            total_min = min(min_for_model.values())
+                            total_max = max(max_for_model.values())
+                            total_range = total_max - total_min
+                            min_range = min(range_for_model.values())
+                            max_range = max(range_for_model.values())
+                            if (flag_reverse and (min_range / total_range < limit_set or min_range / max_range < limit_set)) or (not flag_reverse and not (min_range / total_range < limit_set or min_range / max_range < limit_set)):
+                                print(varname, metric_name_use, tn, min_range / total_range * 100, max_range / total_range * 100, min_range / max_range * 100)
+                for varname in vartouse_var:
+                    for metric_name_use in metric_dicti:
+                        for tn in range(5):
+                            for vn in range(5):
+                                plt_dict = dict()
+                                min_for_model = dict()
+                                max_for_model = dict()
+                                range_for_model = dict()
+                                for model_name_use in ord_metric:
+                                    if model_name_use in skip_models:
+                                        continue
+                                    plt_dict[model_name_use] = []
+                                    for val_ws in list_ws:
+                                        plt_dict[model_name_use].append(dicti_all[tn][vn][varname][model_name_use][str(val_ws)][metric_name_use])
+                                for model_name_use in plt_dict:
+                                    min_for_model[model_name_use] = min(plt_dict[model_name_use])
+                                    max_for_model[model_name_use] = max(plt_dict[model_name_use])
+                                    range_for_model[model_name_use] = max_for_model[model_name_use] - min_for_model[model_name_use]
+                                total_min = min(min_for_model.values())
+                                total_max = max(max_for_model.values())
+                                total_range = total_max - total_min
+                                min_range = min(range_for_model.values())
+                                max_range = max(range_for_model.values())
+                                if (flag_reverse and (min_range / total_range < limit_set or min_range / max_range < limit_set)) or (not flag_reverse and not (min_range / total_range < limit_set or min_range / max_range < limit_set)):
+                                    print(varname, metric_name_use, tn, vn, min_range / total_range * 100, max_range / total_range * 100, min_range / max_range * 100)
+                                
+            if use_traj:
+                for varname in vartouse_traj:
+                    for metric_name_use in metric_dicti_traj:
+                        plt_dict = dict()
+                        min_for_model = dict()
+                        max_for_model = dict()
+                        range_for_model = dict()
+                        for model_name_use in ord_metric_traj:
+                            if model_name_use in skip_models:
+                                continue
+                            plt_dict[model_name_use] = []
+                            for val_ws in list_ws:
+                                plt_dict[model_name_use].append(dicti_all_traj_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use])
+                        for model_name_use in plt_dict:
+                            min_for_model[model_name_use] = min(plt_dict[model_name_use])
+                            max_for_model[model_name_use] = max(plt_dict[model_name_use])
+                            range_for_model[model_name_use] = max_for_model[model_name_use] - min_for_model[model_name_use]
+                        total_min = min(min_for_model.values())
+                        total_max = max(max_for_model.values())
+                        total_range = total_max - total_min
+                        min_range = min(range_for_model.values())
+                        max_range = max(range_for_model.values())
+                        if (flag_reverse and (min_range / total_range < limit_set or min_range / max_range < limit_set)) or (not flag_reverse and not (min_range / total_range < limit_set or min_range / max_range < limit_set)):
+                            print(varname, metric_name_use, min_range / total_range * 100, max_range / total_range * 100, min_range / max_range * 100)
+                for varname in vartouse_traj:
+                    for metric_name_use in metric_dicti_traj:
+                        for tn in range(5):
+                            plt_dict = dict()
+                            min_for_model = dict()
+                            max_for_model = dict()
+                            range_for_model = dict()
+                            for model_name_use in ord_metric_traj:
+                                if model_name_use in skip_models:
+                                    continue
+                                plt_dict[model_name_use] = []
+                                for val_ws in list_ws:
+                                    plt_dict[model_name_use].append(dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn])
+                            for model_name_use in plt_dict:
+                                min_for_model[model_name_use] = min(plt_dict[model_name_use])
+                                max_for_model[model_name_use] = max(plt_dict[model_name_use])
+                                range_for_model[model_name_use] = max_for_model[model_name_use] - min_for_model[model_name_use]
+                            total_min = min(min_for_model.values())
+                            total_max = max(max_for_model.values())
+                            total_range = total_max - total_min
+                            min_range = min(range_for_model.values())
+                            max_range = max(range_for_model.values())
+                            if (flag_reverse and (min_range / total_range < limit_set or min_range / max_range < limit_set)) or (not flag_reverse and not (min_range / total_range < limit_set or min_range / max_range < limit_set)):
+                                print(varname, metric_name_use, tn, min_range / total_range * 100, max_range / total_range * 100, min_range / max_range * 100)
+                for varname in vartouse_traj:
+                    for metric_name_use in metric_dicti_traj:
+                        for tn in range(5):
+                            for vn in range(5):
+                                plt_dict = dict()
+                                min_for_model = dict()
+                                max_for_model = dict()
+                                range_for_model = dict()
+                                for model_name_use in ord_metric_traj:
+                                    if model_name_use in skip_models:
+                                        continue
+                                    plt_dict[model_name_use] = []
+                                    for val_ws in list_ws:
+                                        plt_dict[model_name_use].append(dicti_all_traj[tn][vn][varname][model_name_use][str(val_ws)][metric_name_use])
+                                for model_name_use in plt_dict:
+                                    min_for_model[model_name_use] = min(plt_dict[model_name_use])
+                                    max_for_model[model_name_use] = max(plt_dict[model_name_use])
+                                    range_for_model[model_name_use] = max_for_model[model_name_use] - min_for_model[model_name_use]
+                                total_min = min(min_for_model.values())
+                                total_max = max(max_for_model.values())
+                                total_range = total_max - total_min
+                                min_range = min(range_for_model.values())
+                                max_range = max(range_for_model.values())
+                                if (flag_reverse and (min_range / total_range < limit_set or min_range / max_range < limit_set)) or (not flag_reverse and not (min_range / total_range < limit_set or min_range / max_range < limit_set)):
+                                    print(varname, metric_name_use, tn, vn, min_range / total_range * 100, max_range / total_range * 100, min_range / max_range * 100)
+                             
+    if use_minmax:
+        if use_test == 0 and use_val == 0:
+            skip_names = ["LSTM_"]
+            skip_models = set()
+            for model_name_use in ord_metric:
+                found_part = False
+                for part in skip_names:
+                    if part in model_name_use:
+                        found_part = True
+                        break
+                if found_part:
+                    skip_models.add(model_name_use)
+            print(skip_models)
+            for model_name_use in ord_metric_traj:
+                found_part = False
+                for part in skip_names:
+                    if part in model_name_use:
+                        found_part = True
+                        break
+                if found_part:
+                    skip_models.add(model_name_use)
+            if use_var:
+                for varname in vartouse_var:
+                    for metric_name_use in metric_dicti:
+                        max_for_ws = dict()
+                        min_for_ws = dict()
+                        for val_ws in list_ws:
+                            mini_model = ""
+                            min_for_model = MAXVALTOTAL
+                            maxi_model = ""
+                            max_for_model = -MAXVALTOTAL
+                            for model_name_use in ord_metric:
+                                    val = dicti_all_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use]
+                                    if val < min_for_model:
+                                        min_for_model = val
+                                        mini_model = model_name_use
+                                    if val > max_for_model:
+                                        max_for_model = val
+                                        maxi_model = model_name_use
+                            max_for_ws[val_ws] = (maxi_model, max_for_model)
+                            min_for_ws[val_ws] = (mini_model, min_for_model)
+                        print(varname, metric_name_use)
+                        if "R2" in metric_name_use:
+                            print([x[0] for x in max_for_ws.values()])
+                            print([x[1] for x in max_for_ws.values()])
+                        else:
+                            print([x[0] for x in min_for_ws.values()])
+                            print([x[1] for x in min_for_ws.values()])
+                for varname in vartouse_var:
+                    for metric_name_use in metric_dicti:
+                        for tn in range(5):
+                            max_for_ws = dict()
+                            min_for_ws = dict()
+                            for val_ws in list_ws:
+                                mini_model = ""
+                                min_for_model = MAXVALTOTAL
+                                maxi_model = ""
+                                max_for_model = -MAXVALTOTAL
+                                for model_name_use in ord_metric:
+                                        val = dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn]
+                                        if val < min_for_model:
+                                            min_for_model = val
+                                            mini_model = model_name_use
+                                        if val > max_for_model:
+                                            max_for_model = val
+                                            maxi_model = model_name_use
+                                max_for_ws[val_ws] = (maxi_model, max_for_model)
+                                min_for_ws[val_ws] = (mini_model, min_for_model)
+                            print(varname, metric_name_use, tn)
+                            if "R2" in metric_name_use:
+                                print([x[0] for x in max_for_ws.values()])
+                                print([x[1] for x in max_for_ws.values()])
+                            else:
+                                print([x[0] for x in min_for_ws.values()])
+                                print([x[1] for x in min_for_ws.values()])
+                for varname in vartouse_var:
+                    for metric_name_use in metric_dicti:
+                        for tn in range(5):
+                            for vn in range(5):
+                                max_for_ws = dict()
+                                min_for_ws = dict()
+                                for val_ws in list_ws:
+                                    mini_model = ""
+                                    min_for_model = MAXVALTOTAL
+                                    maxi_model = ""
+                                    max_for_model = -MAXVALTOTAL
+                                    for model_name_use in ord_metric:
+                                            val = dicti_all_latest[tn][vn][varname][model_name_use][str(val_ws)][metric_name_use]
+                                            if val < min_for_model:
+                                                min_for_model = val
+                                                mini_model = model_name_use
+                                            if val > max_for_model:
+                                                max_for_model = val
+                                                maxi_model = model_name_use
+                                    max_for_ws[val_ws] = (maxi_model, max_for_model)
+                                    min_for_ws[val_ws] = (mini_model, min_for_model)
+                                print(varname, metric_name_use, tn, vn)
+                                if "R2" in metric_name_use:
+                                    print([x[0] for x in max_for_ws.values()])
+                                    print([x[1] for x in max_for_ws.values()])
+                                else:
+                                    print([x[0] for x in min_for_ws.values()])
+                                    print([x[1] for x in min_for_ws.values()])
+            if use_traj:
+                for varname in vartouse_traj:
+                    for metric_name_use in metric_dicti_traj:
+                        max_for_ws = dict()
+                        min_for_ws = dict()
+                        for val_ws in list_ws:
+                            mini_model = ""
+                            min_for_model = MAXVALTOTAL
+                            maxi_model = ""
+                            max_for_model = -MAXVALTOTAL
+                            for model_name_use in ord_metric_traj:
+                                    val = dicti_all_traj_latest_avg[varname][model_name_use][str(val_ws)][metric_name_use]
+                                    if val < min_for_model:
+                                        min_for_model = val
+                                        mini_model = model_name_use
+                                    if val > max_for_model:
+                                        max_for_model = val
+                                        maxi_model = model_name_use
+                            max_for_ws[val_ws] = (maxi_model, max_for_model)
+                            min_for_ws[val_ws] = (mini_model, min_for_model)
+                        print(varname, metric_name_use)
+                        if "R2" in metric_name_use:
+                            print([x[0] for x in max_for_ws.values()])
+                            print([x[1] for x in max_for_ws.values()])
+                        else:
+                            print([x[0] for x in min_for_ws.values()])
+                            print([x[1] for x in min_for_ws.values()])
+                for varname in vartouse_traj:
+                    for metric_name_use in metric_dicti_traj:
+                        for tn in range(5):
+                            max_for_ws = dict()
+                            min_for_ws = dict()
+                            for val_ws in list_ws:
+                                mini_model = ""
+                                min_for_model = MAXVALTOTAL
+                                maxi_model = ""
+                                max_for_model = -MAXVALTOTAL
+                                for model_name_use in ord_metric_traj:
+                                        val = dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn]
+                                        if val < min_for_model:
+                                            min_for_model = val
+                                            mini_model = model_name_use
+                                        if val > max_for_model:
+                                            max_for_model = val
+                                            maxi_model = model_name_use
+                                max_for_ws[val_ws] = (maxi_model, max_for_model)
+                                min_for_ws[val_ws] = (mini_model, min_for_model)
+                            print(varname, metric_name_use, tn)
+                            if "R2" in metric_name_use:
+                                print([x[0] for x in max_for_ws.values()])
+                                print([x[1] for x in max_for_ws.values()])
+                            else:
+                                print([x[0] for x in min_for_ws.values()])
+                                print([x[1] for x in min_for_ws.values()])
+                for varname in vartouse_traj:
+                    for metric_name_use in metric_dicti_traj:
+                        for tn in range(5):
+                            for vn in range(5):
+                                max_for_ws = dict()
+                                min_for_ws = dict()
+                                for val_ws in list_ws:
+                                    mini_model = ""
+                                    min_for_model = MAXVALTOTAL
+                                    maxi_model = ""
+                                    max_for_model = -MAXVALTOTAL
+                                    for model_name_use in ord_metric_traj:
+                                            val = dicti_all_traj_latest[tn][vn][varname][model_name_use][str(val_ws)][metric_name_use]
+                                            if val < min_for_model:
+                                                min_for_model = val
+                                                mini_model = model_name_use
+                                            if val > max_for_model:
+                                                max_for_model = val
+                                                maxi_model = model_name_use
+                                    max_for_ws[val_ws] = (maxi_model, max_for_model)
+                                    min_for_ws[val_ws] = (mini_model, min_for_model)
+                                print(varname, metric_name_use, tn, vn)
+                                if "R2" in metric_name_use:
+                                    print([x[0] for x in max_for_ws.values()])
+                                    print([x[1] for x in max_for_ws.values()])
+                                else:
+                                    print([x[0] for x in min_for_ws.values()])
+                                    print([x[1] for x in min_for_ws.values()])
+
+use_table = False
 use_plot = True
-use_sizes = True
+use_sizes = False
+use_outliers = False
+use_minmax = False
+use_single = True
+use_vertical = True
+use_horizontal = True
+use_all = True
 use_test = 0
 use_val = 0
-use_std = True
+use_std = False
 use_var = False
 use_traj = True
 
-my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_std = use_std, use_var = use_var, use_traj = use_traj)
-for use_test in range(0, 1):
-    my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_test = use_test, use_std = use_std, use_var = use_var, use_traj = use_traj)
-    for use_val in range(0, 1):
-        my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_test = use_test, use_val = use_val, use_std = use_std, use_var = use_var, use_traj = use_traj)
+my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_outliers = use_outliers, use_minmax = use_minmax, use_single = use_single, use_vertical = use_vertical, use_horizontal = use_horizontal, use_all = use_all, use_std = use_std, use_var = use_var, use_traj = use_traj)
+for use_test in range(1, 2):
+    #my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_outliers = use_outliers, use_minmax = use_minmax, use_single = use_single, use_vertical = use_vertical, use_horizontal = use_horizontal, use_all = use_all, use_test = use_test, use_std = use_std, use_var = use_var, use_traj = use_traj)
+    for use_val in range(1, 2):
+        my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_outliers = use_outliers, use_minmax = use_minmax, use_single = use_single, use_vertical = use_vertical, use_horizontal = use_horizontal, use_all = use_all, use_test = use_test, use_val = use_val, use_std = use_std, use_var = use_var, use_traj = use_traj)
