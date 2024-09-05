@@ -173,7 +173,7 @@ dicti_my_title = {0: "",
                   4: "$4^{th}$",
                   5: "$5^{th}$"}
 
-def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outliers = True, use_minmax = True, use_single = True, use_vertical = True, use_horizontal = True, use_all = True, use_merged = True, use_test = 0, use_val = 0, use_std = True, use_var = True, use_traj = True):
+def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outliers = True, use_minmax = True, use_detail = True, use_single = True, use_vertical = True, use_horizontal = True, use_all = True, use_merged = True, use_test = 0, use_val = 0, use_std = True, use_var = True, use_traj = True):
     if use_val > 0 and use_test == 0:
         return
     print(use_test, use_val)
@@ -1511,25 +1511,6 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                              
     if use_minmax:
         if use_test == 0 and use_val == 0:
-            skip_names = ["LSTM_"]
-            skip_models = set()
-            for model_name_use in ord_metric:
-                found_part = False
-                for part in skip_names:
-                    if part in model_name_use:
-                        found_part = True
-                        break
-                if found_part:
-                    skip_models.add(model_name_use)
-            print(skip_models)
-            for model_name_use in ord_metric_traj:
-                found_part = False
-                for part in skip_names:
-                    if part in model_name_use:
-                        found_part = True
-                        break
-                if found_part:
-                    skip_models.add(model_name_use)
             if use_var:
                 for varname in vartouse_var:
                     for metric_name_use in metric_dicti:
@@ -1550,6 +1531,8 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                         maxi_model = model_name_use
                             max_for_ws[val_ws] = (maxi_model, max_for_model)
                             min_for_ws[val_ws] = (mini_model, min_for_model)
+                        if "wt" in metric_name_use or "RMSE" in metric_name_use:
+                            continue
                         print(varname, metric_name_use)
                         if "R2" in metric_name_use:
                             print([x[0] for x in max_for_ws.values()])
@@ -1557,37 +1540,10 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                         else:
                             print([x[0] for x in min_for_ws.values()])
                             print([x[1] for x in min_for_ws.values()])
-                for varname in vartouse_var:
-                    for metric_name_use in metric_dicti:
-                        for tn in range(5):
-                            max_for_ws = dict()
-                            min_for_ws = dict()
-                            for val_ws in list_ws:
-                                mini_model = ""
-                                min_for_model = MAXVALTOTAL
-                                maxi_model = ""
-                                max_for_model = -MAXVALTOTAL
-                                for model_name_use in ord_metric:
-                                        val = dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn]
-                                        if val < min_for_model:
-                                            min_for_model = val
-                                            mini_model = model_name_use
-                                        if val > max_for_model:
-                                            max_for_model = val
-                                            maxi_model = model_name_use
-                                max_for_ws[val_ws] = (maxi_model, max_for_model)
-                                min_for_ws[val_ws] = (mini_model, min_for_model)
-                            print(varname, metric_name_use, tn)
-                            if "R2" in metric_name_use:
-                                print([x[0] for x in max_for_ws.values()])
-                                print([x[1] for x in max_for_ws.values()])
-                            else:
-                                print([x[0] for x in min_for_ws.values()])
-                                print([x[1] for x in min_for_ws.values()])
-                for varname in vartouse_var:
-                    for metric_name_use in metric_dicti:
-                        for tn in range(5):
-                            for vn in range(5):
+                if use_detail:
+                    for varname in vartouse_var:
+                        for metric_name_use in metric_dicti:
+                            for tn in range(5):
                                 max_for_ws = dict()
                                 min_for_ws = dict()
                                 for val_ws in list_ws:
@@ -1596,7 +1552,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                     maxi_model = ""
                                     max_for_model = -MAXVALTOTAL
                                     for model_name_use in ord_metric:
-                                            val = dicti_all_latest[tn][vn][varname][model_name_use][str(val_ws)][metric_name_use]
+                                            val = dicti_all_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn]
                                             if val < min_for_model:
                                                 min_for_model = val
                                                 mini_model = model_name_use
@@ -1605,13 +1561,45 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                                 maxi_model = model_name_use
                                     max_for_ws[val_ws] = (maxi_model, max_for_model)
                                     min_for_ws[val_ws] = (mini_model, min_for_model)
-                                print(varname, metric_name_use, tn, vn)
+                                if "wt" in metric_name_use or "RMSE" in metric_name_use:
+                                    continue
+                                print(varname, metric_name_use, tn)
                                 if "R2" in metric_name_use:
                                     print([x[0] for x in max_for_ws.values()])
                                     print([x[1] for x in max_for_ws.values()])
                                 else:
                                     print([x[0] for x in min_for_ws.values()])
                                     print([x[1] for x in min_for_ws.values()])
+                    for varname in vartouse_var:
+                        for metric_name_use in metric_dicti:
+                            for tn in range(5):
+                                for vn in range(5):
+                                    max_for_ws = dict()
+                                    min_for_ws = dict()
+                                    for val_ws in list_ws:
+                                        mini_model = ""
+                                        min_for_model = MAXVALTOTAL
+                                        maxi_model = ""
+                                        max_for_model = -MAXVALTOTAL
+                                        for model_name_use in ord_metric:
+                                                val = dicti_all_latest[tn][vn][varname][model_name_use][str(val_ws)][metric_name_use]
+                                                if val < min_for_model:
+                                                    min_for_model = val
+                                                    mini_model = model_name_use
+                                                if val > max_for_model:
+                                                    max_for_model = val
+                                                    maxi_model = model_name_use
+                                        max_for_ws[val_ws] = (maxi_model, max_for_model)
+                                        min_for_ws[val_ws] = (mini_model, min_for_model)
+                                    if "wt" in metric_name_use or "RMSE" in metric_name_use:
+                                        continue
+                                    print(varname, metric_name_use, tn, vn)
+                                    if "R2" in metric_name_use:
+                                        print([x[0] for x in max_for_ws.values()])
+                                        print([x[1] for x in max_for_ws.values()])
+                                    else:
+                                        print([x[0] for x in min_for_ws.values()])
+                                        print([x[1] for x in min_for_ws.values()])
             if use_traj:
                 for varname in vartouse_traj:
                     for metric_name_use in metric_dicti_traj:
@@ -1632,6 +1620,8 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                         maxi_model = model_name_use
                             max_for_ws[val_ws] = (maxi_model, max_for_model)
                             min_for_ws[val_ws] = (mini_model, min_for_model)
+                        if "wt" in metric_name_use or "RMSE" in metric_name_use:
+                            continue
                         print(varname, metric_name_use)
                         if "R2" in metric_name_use:
                             print([x[0] for x in max_for_ws.values()])
@@ -1639,37 +1629,10 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                         else:
                             print([x[0] for x in min_for_ws.values()])
                             print([x[1] for x in min_for_ws.values()])
-                for varname in vartouse_traj:
-                    for metric_name_use in metric_dicti_traj:
-                        for tn in range(5):
-                            max_for_ws = dict()
-                            min_for_ws = dict()
-                            for val_ws in list_ws:
-                                mini_model = ""
-                                min_for_model = MAXVALTOTAL
-                                maxi_model = ""
-                                max_for_model = -MAXVALTOTAL
-                                for model_name_use in ord_metric_traj:
-                                        val = dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn]
-                                        if val < min_for_model:
-                                            min_for_model = val
-                                            mini_model = model_name_use
-                                        if val > max_for_model:
-                                            max_for_model = val
-                                            maxi_model = model_name_use
-                                max_for_ws[val_ws] = (maxi_model, max_for_model)
-                                min_for_ws[val_ws] = (mini_model, min_for_model)
-                            print(varname, metric_name_use, tn)
-                            if "R2" in metric_name_use:
-                                print([x[0] for x in max_for_ws.values()])
-                                print([x[1] for x in max_for_ws.values()])
-                            else:
-                                print([x[0] for x in min_for_ws.values()])
-                                print([x[1] for x in min_for_ws.values()])
-                for varname in vartouse_traj:
-                    for metric_name_use in metric_dicti_traj:
-                        for tn in range(5):
-                            for vn in range(5):
+                if use_detail:
+                    for varname in vartouse_traj:
+                        for metric_name_use in metric_dicti_traj:
+                            for tn in range(5):
                                 max_for_ws = dict()
                                 min_for_ws = dict()
                                 for val_ws in list_ws:
@@ -1678,7 +1641,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                     maxi_model = ""
                                     max_for_model = -MAXVALTOTAL
                                     for model_name_use in ord_metric_traj:
-                                            val = dicti_all_traj_latest[tn][vn][varname][model_name_use][str(val_ws)][metric_name_use]
+                                            val = dicti_all_traj_latest_by_test_avg[varname][model_name_use][str(val_ws)][metric_name_use][tn]
                                             if val < min_for_model:
                                                 min_for_model = val
                                                 mini_model = model_name_use
@@ -1687,32 +1650,65 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                                 maxi_model = model_name_use
                                     max_for_ws[val_ws] = (maxi_model, max_for_model)
                                     min_for_ws[val_ws] = (mini_model, min_for_model)
-                                print(varname, metric_name_use, tn, vn)
+                                if "wt" in metric_name_use or "RMSE" in metric_name_use:
+                                    continue
+                                print(varname, metric_name_use, tn)
                                 if "R2" in metric_name_use:
                                     print([x[0] for x in max_for_ws.values()])
                                     print([x[1] for x in max_for_ws.values()])
                                 else:
                                     print([x[0] for x in min_for_ws.values()])
                                     print([x[1] for x in min_for_ws.values()])
+                    for varname in vartouse_traj:
+                        for metric_name_use in metric_dicti_traj:
+                            for tn in range(5):
+                                for vn in range(5):
+                                    max_for_ws = dict()
+                                    min_for_ws = dict()
+                                    for val_ws in list_ws:
+                                        mini_model = ""
+                                        min_for_model = MAXVALTOTAL
+                                        maxi_model = ""
+                                        max_for_model = -MAXVALTOTAL
+                                        for model_name_use in ord_metric_traj:
+                                                val = dicti_all_traj_latest[tn][vn][varname][model_name_use][str(val_ws)][metric_name_use]
+                                                if val < min_for_model:
+                                                    min_for_model = val
+                                                    mini_model = model_name_use
+                                                if val > max_for_model:
+                                                    max_for_model = val
+                                                    maxi_model = model_name_use
+                                        max_for_ws[val_ws] = (maxi_model, max_for_model)
+                                        min_for_ws[val_ws] = (mini_model, min_for_model)
+                                    if "wt" in metric_name_use or "RMSE" in metric_name_use:
+                                        continue
+                                    print(varname, metric_name_use, tn, vn)
+                                    if "R2" in metric_name_use:
+                                        print([x[0] for x in max_for_ws.values()])
+                                        print([x[1] for x in max_for_ws.values()])
+                                    else:
+                                        print([x[0] for x in min_for_ws.values()])
+                                        print([x[1] for x in min_for_ws.values()])
 
 use_table = False
-use_plot = True
+use_plot = False
 use_sizes = False
 use_outliers = False
-use_minmax = False
+use_minmax = True
+use_detail = False
 use_single = False
 use_vertical = False
 use_horizontal = False
 use_all = False
-use_merged = True
+use_merged = False
 use_test = 0
 use_val = 0
 use_std = False
 use_var = True
 use_traj = True
 
-my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_outliers = use_outliers, use_minmax = use_minmax, use_single = use_single, use_vertical = use_vertical, use_horizontal = use_horizontal, use_all = use_all, use_merged = use_merged, use_std = use_std, use_var = use_var, use_traj = use_traj)
+my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_outliers = use_outliers, use_minmax = use_minmax, use_detail = use_detail, use_single = use_single, use_vertical = use_vertical, use_horizontal = use_horizontal, use_all = use_all, use_merged = use_merged, use_std = use_std, use_var = use_var, use_traj = use_traj)
 #for use_test in range(0, 6):
-    #my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_outliers = use_outliers, use_minmax = use_minmax, use_single = use_single, use_vertical = use_vertical, use_horizontal = use_horizontal, use_all = use_all, use_merged = use_merged, use_test = use_test, use_std = use_std, use_var = use_var, use_traj = use_traj)
+    #my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_outliers = use_outliers, use_minmax = use_minmax, use_detail = use_detail, use_single = use_single, use_vertical = use_vertical, use_horizontal = use_horizontal, use_all = use_all, use_merged = use_merged, use_test = use_test, use_std = use_std, use_var = use_var, use_traj = use_traj)
     #for use_val in range(0, 6):
-        #my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_outliers = use_outliers, use_minmax = use_minmax, use_single = use_single, use_vertical = use_vertical, use_horizontal = use_horizontal, use_all = use_all, use_merged = use_merged, use_test = use_test, use_val = use_val, use_std = use_std, use_var = use_var, use_traj = use_traj)
+        #my_table_print(use_table = use_table, use_plot = use_plot, use_sizes = use_sizes, use_outliers = use_outliers, use_minmax = use_minmax, use_detail = use_detail, use_single = use_single, use_vertical = use_vertical, use_horizontal = use_horizontal, use_all = use_all, use_merged = use_merged, use_test = use_test, use_val = use_val, use_std = use_std, use_var = use_var, use_traj = use_traj)
