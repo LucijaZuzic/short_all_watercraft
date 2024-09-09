@@ -597,7 +597,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                     plt_dict.append(dicti_all_latest[use_test - 1][use_val - 1][varname][model_name_use][str(val_ws)][metric_name_use])
                             if "R2" in metric_name_use or "NRMSE" in metric_name_use:
                                 plt_dict = [x * 100 for x in plt_dict]
-                            plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                            plt.plot(list_ws, plt_dict, label = model_name_use.replace("UniTS", "Foundation").replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
                             cix += 1
                             if cix == len(lnc):
                                 cix = 0
@@ -662,7 +662,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                 if "R2" in metric_name_use or "NRMSE" in metric_name_use:
                                     plt_dict = [x * 100 for x in plt_dict]
                                 if tx == len(vartouse_var) - 1:    
-                                    plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                                    plt.plot(list_ws, plt_dict, label = model_name_use.replace("UniTS", "Foundation").replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
                                 else:
                                     plt.plot(list_ws, plt_dict, color = lnc[cix], linestyle = lns[six])
                                 cix += 1
@@ -725,7 +725,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                     if "R2" in metric_name_use or "NRMSE" in metric_name_use:
                                         plt_dict = [x * 100 for x in plt_dict]
                                     if tn == 4:    
-                                        plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                                        plt.plot(list_ws, plt_dict, label = model_name_use.replace("UniTS", "Foundation").replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
                                     else:
                                         plt.plot(list_ws, plt_dict, color = lnc[cix], linestyle = lns[six])
                                     cix += 1
@@ -787,7 +787,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                     if "R2" in metric_name_use or "NRMSE" in metric_name_use:
                                         plt_dict = [x * 100 for x in plt_dict]
                                     if tn == 0:    
-                                        plt.plot(plt_dict, list_ws, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                                        plt.plot(plt_dict, list_ws, label = model_name_use.replace("UniTS", "Foundation").replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
                                     else:
                                         plt.plot(plt_dict, list_ws, color = lnc[cix], linestyle = lns[six])
                                     cix += 1
@@ -851,7 +851,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                         if "R2" in metric_name_use or "NRMSE" in metric_name_use:
                                             plt_dict = [x * 100 for x in plt_dict]
                                         if tn == 4 and vn == 0:    
-                                            plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                                            plt.plot(list_ws, plt_dict, label = model_name_use.replace("UniTS", "Foundation").replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
                                         else:
                                             plt.plot(list_ws, plt_dict, color = lnc[cix], linestyle = lns[six])
                                         cix += 1
@@ -930,7 +930,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                     plt_dict.append(dicti_all_traj_latest[use_test - 1][use_val - 1][varname][model_name_use][str(val_ws)][metric_name_use])
                             if "R2" in metric_name_use or "NRMSE" in metric_name_use:
                                 plt_dict = [x * 100 for x in plt_dict]
-                            plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                            plt.plot(list_ws, plt_dict, label = model_name_use.replace("UniTS", "Foundation").replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
                             cix += 1
                             if cix == len(lnc):
                                 cix = 0
@@ -995,7 +995,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                 if "R2" in metric_name_use or "NRMSE" in metric_name_use:
                                     plt_dict = [x * 100 for x in plt_dict]
                                 if tx == len(vartouse_traj) - 1:    
-                                    plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                                    plt.plot(list_ws, plt_dict, label = model_name_use.replace("UniTS", "Foundation").replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
                                 else:
                                     plt.plot(list_ws, plt_dict, color = lnc[cix], linestyle = lns[six])
                                 cix += 1
@@ -1058,7 +1058,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                     if "R2" in metric_name_use or "NRMSE" in metric_name_use:
                                         plt_dict = [x * 100 for x in plt_dict]
                                     if tn == 4:    
-                                        plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                                        plt.plot(list_ws, plt_dict, label = model_name_use.replace("UniTS", "Foundation").replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
                                     else:
                                         plt.plot(list_ws, plt_dict, color = lnc[cix], linestyle = lns[six])
                                     cix += 1
@@ -1120,7 +1120,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                     if "R2" in metric_name_use or "NRMSE" in metric_name_use:
                                         plt_dict = [x * 100 for x in plt_dict]
                                     if tn == 0:    
-                                        plt.plot(plt_dict, list_ws, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                                        plt.plot(plt_dict, list_ws, label = model_name_use.replace("UniTS", "Foundation").replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
                                     else:
                                         plt.plot(plt_dict, list_ws, color = lnc[cix], linestyle = lns[six])
                                     cix += 1
@@ -1184,7 +1184,7 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                         if "R2" in metric_name_use or "NRMSE" in metric_name_use:
                                             plt_dict = [x * 100 for x in plt_dict]
                                         if tn == 4 and vn == 0:    
-                                            plt.plot(list_ws, plt_dict, label = model_name_use.replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
+                                            plt.plot(list_ws, plt_dict, label = model_name_use.replace("UniTS", "Foundation").replace("_256", "").replace("_longlat_speed_direction", "").replace("_", " "), color = lnc[cix], linestyle = lns[six])
                                         else:
                                             plt.plot(list_ws, plt_dict, color = lnc[cix], linestyle = lns[six])
                                         cix += 1
@@ -1691,16 +1691,16 @@ def my_table_print(use_table = True, use_plot = True, use_sizes = True, use_outl
                                         print([x[1] for x in min_for_ws.values()])
 
 use_table = False
-use_plot = False
+use_plot = True
 use_sizes = False
 use_outliers = False
-use_minmax = True
+use_minmax = False
 use_detail = False
 use_single = False
 use_vertical = False
 use_horizontal = False
 use_all = False
-use_merged = False
+use_merged = True
 use_test = 0
 use_val = 0
 use_std = False
